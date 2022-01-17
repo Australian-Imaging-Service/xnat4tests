@@ -1,0 +1,17 @@
+*.pyc
+__pycache__
+.DS_Store
+*~
+.DS_Store
+.coverage
+.settings/
+*.swp 
+/build/
+/dist/
+.pytest_cache
+/.history
+.env
+.vscode
+*.egg-info
+/xnat4tests/docker/build
+/xnat4tests/docker/xnat_root
