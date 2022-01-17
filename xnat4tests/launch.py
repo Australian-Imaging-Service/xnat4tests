@@ -109,13 +109,11 @@ def launch_docker_registry():
 
 
 def stop_xnat():
-    dc = docker.from_env()
-    dc.containers.stop(DOCKER_CONTAINER)
+    launch_xnat().stop()
 
 
 def stop_docker_registry():
-    dc = docker.from_env()
-    dc.containers.stop(DOCKER_REGISTRY_CONTAINER)
+    launch_docker_registry().stop(DOCKER_REGISTRY_CONTAINER)
 
 
 def docker_network():

@@ -15,6 +15,9 @@ setup(
         'docker>=5.0.2',
         'xnat>=0.3.17',
         'requests>=2.10.0'],
+    extras_require={
+        'test': [
+            'pytest>=5.4.3']},
     classifiers=(
         ["Development Status :: 4 - Beta",
          "Intended Audience :: Healthcare Industry",
