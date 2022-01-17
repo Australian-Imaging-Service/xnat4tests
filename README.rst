@@ -6,7 +6,7 @@ within a single Docker image to facilitate the testing API calls and container
 service execution by third-party packages.
 
 The 'home/logs', 'home/work', 'build', 'archive', 'prearchive' directories are
-mounted in from the host for direct access under `xnat4tests.config.XNAT_ROOT_DIR`,
+mounted in from the host for direct access under ``xnat4tests.config.XNAT_ROOT_DIR``,
 which can be useful for debugging and enables the environment in which containers
 run in within XNAT's container service to be mocked.
 
