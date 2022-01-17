@@ -6,7 +6,7 @@ import xnat
 
 
 from .config import (
-    SRC_DIR, DOCKER_IMAGE, DOCKER_CONTAINER, XNAT_MNT_DIRS, XNAT_PORT, XNAT_ROOT,
+    SRC_DIR, DOCKER_IMAGE, DOCKER_CONTAINER, XNAT_MNT_DIRS, XNAT_PORT, XNAT_ROOT_DIR,
     DOCKER_NETWORK_NAME, XNAT_URI, REGISTRY_PORT, XNAT_USER, XNAT_PASSWORD,
     DOCKER_REGISTRY_IMAGE, DOCKER_REGISTRY_CONTAINER, CONNECTION_ATTEMPTS,
     CONNECTION_ATTEMPT_SLEEP)
@@ -38,9 +38,9 @@ def launch_xnat():
         # Mount in the XNAT root directory for debugging and to allow access
         # from the Docker host when using the container service
         # Clear previous ROOT directories
-        shutil.rmtree(XNAT_ROOT, ignore_errors=True)
+        shutil.rmtree(XNAT_ROOT_DIR, ignore_errors=True)
         for  dname in XNAT_MNT_DIRS:
-            dpath = XNAT_ROOT / dname
+            dpath = XNAT_ROOT_DIR / dname
             dpath.mkdir(parents=True)
             volumes[str(dpath)] = {'bind': '/data/xnat/' + dname,
                                    'mode': 'rw'}
@@ -79,7 +79,7 @@ def launch_xnat():
             'cert-path': '',
             'swarm-mode': False,
             'path-translation-xnat-prefix': '/data/xnat',
-            'path-translation-docker-prefix': str(XNAT_ROOT),
+            'path-translation-docker-prefix': str(XNAT_ROOT_DIR),
             'pull-images-on-xnat-init': False,
             'container-user': '',
             'auto-cleanup': True,

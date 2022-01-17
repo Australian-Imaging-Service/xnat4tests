@@ -4,7 +4,7 @@ ROOT_DIR = Path(__file__).parent / 'docker'
 
 SRC_DIR = ROOT_DIR / 'src'
 BUILD_DIR = ROOT_DIR / 'build'
-XNAT_ROOT = ROOT_DIR / 'xnat_root'
+XNAT_ROOT_DIR = ROOT_DIR / 'xnat_root'
 XNAT_MNT_DIRS = [
     'home/logs', 'home/work', 'build', 'archive', 'prearchive']
 DOCKER_IMAGE = 'xnat4tests'
