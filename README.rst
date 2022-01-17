@@ -1,5 +1,5 @@
 Xnat4Tests
-----------
+==========
 .. image:: https://github.com/australian-imaging-service/xnat4tests/actions/workflows/test.yml/badge.svg
    :target: https://github.com/Australian-Imaging-Service/xnat4tests/actions/workflows/test.yml
 .. image:: https://img.shields.io/pypi/v/xnat4tests.svg
@@ -20,7 +20,19 @@ run in within XNAT's container service to be mocked.
 In addition to the ``launch_xnat`` function, which launches the XNAT instance, a ``connect``
 function is supplied that returns an XnatPy connection object to the test instance
 
-The basic usage is as follows:
+Installation
+------------
+
+Xnat4Tests is available on PyPI so to install, simply use pip
+
+.. code-block:: bash
+
+    $ pip3 install xnat4tests
+    
+or include in your package's ``test_requires``.
+
+Usage
+-----
 
 .. code-block:: python
 
