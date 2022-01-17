@@ -1,7 +1,7 @@
 Xnat4Tests
 ----------
-.. |Tests| image:: https://github.com/australian-imaging-service/xnat4tests/actions/workflows/test/badge.svg
-    :target:
+.. image:: https://github.com/australian-imaging-service/xnat4tests/actions/workflows/test/badge.svg
+   :target:
 
 Xnat4Tests provides a helper functions for testing third party tools that access the XNAT
 API or container service, primarily a means to launch a basic XNAT repository instance
