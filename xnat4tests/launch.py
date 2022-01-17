@@ -6,7 +6,8 @@ import xnat
 
 
 from .config import (
-    SRC_DIR, DOCKER_IMAGE, DOCKER_CONTAINER, XNAT_MNT_DIRS, XNAT_PORT, XNAT_ROOT_DIR,
+    SRC_DIR, BUILD_DIR, DOCKER_IMAGE, DOCKER_CONTAINER, XNAT_MNT_DIRS,
+    XNAT_PORT, XNAT_ROOT_DIR,
     DOCKER_NETWORK_NAME, XNAT_URI, REGISTRY_PORT, XNAT_USER, XNAT_PASSWORD,
     DOCKER_REGISTRY_IMAGE, DOCKER_REGISTRY_CONTAINER, CONNECTION_ATTEMPTS,
     CONNECTION_ATTEMPT_SLEEP)
@@ -28,7 +29,9 @@ def launch_xnat():
     try:
         image = dc.images.get(DOCKER_IMAGE)
     except docker.errors.ImageNotFound:
-        image, _ = dc.images.build(path=str(SRC_DIR), tag=DOCKER_IMAGE)
+        shutil.rmtree(BUILD_DIR, ignore_errors=True)
+        shutil.copytree(SRC_DIR, BUILD_DIR)
+        image, _ = dc.images.build(path=str(BUILD_DIR), tag=DOCKER_IMAGE)
     
     try:
         container = dc.containers.get(DOCKER_CONTAINER)

@@ -13,5 +13,3 @@ __pycache__
 .env
 .vscode
 *.egg-info
-/xnat4tests/docker/build
-/xnat4tests/docker/xnat_root

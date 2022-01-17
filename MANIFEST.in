@@ -1,0 +1,8 @@
+# Include the README
+include README.rst
+
+# Include the license file
+include LICENSE
+
+# Include the Docker src
+recursive-include xnat4tests/docker-src
