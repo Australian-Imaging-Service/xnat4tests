@@ -8,4 +8,4 @@ include LICENSE
 include AUTHORS
 
 # Include the Docker src
-recursive-include xnat4tests/docker-src
+include xnat4tests/docker-src/*

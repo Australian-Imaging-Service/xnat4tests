@@ -18,6 +18,7 @@ setup(
     extras_require={
         'test': [
             'pytest>=5.4.3']},
+    include_package_data=True,
     classifiers=(
         ["Development Status :: 4 - Beta",
          "Intended Audience :: Healthcare Industry",
