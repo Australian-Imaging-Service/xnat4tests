@@ -10,7 +10,10 @@ mounted in from the host for direct access under ``xnat4tests.config.XNAT_ROOT_D
 which can be useful for debugging and enables the environment in which containers
 run in within XNAT's container service to be mocked.
 
-To launch an XNAT instance
+In addition to the ``launch_xnat`` function, which launches the XNAT instance, a ``connect``
+function is supplied that returns an XnatPy connection object to the test instance
+
+The basic usage is as follows:
 
 .. code-block:: python
 
