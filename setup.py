@@ -1,9 +1,10 @@
+import versioneer
 from setuptools import setup, find_packages
 
 
 setup(
     name='xnat4tests',
-    version='0.1',
+    version=versioneer.get_version(),
     author='Thomas G. Close',
     author_email='tom.g.close@gmail.com',
     packages=find_packages(),
@@ -19,6 +20,7 @@ setup(
         'test': [
             'pytest>=5.4.3']},
     include_package_data=True,
+    cmdclass=versioneer.get_cmdclass(),
     classifiers=(
         ["Development Status :: 4 - Beta",
          "Intended Audience :: Healthcare Industry",

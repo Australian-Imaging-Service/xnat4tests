@@ -9,5 +9,7 @@ include AUTHORS
 
 # Include the Docker src
 include xnat4tests/docker-src/*
+
+# Include Versioneer files
 include versioneer.py
 include xnat4tests/_version.py
