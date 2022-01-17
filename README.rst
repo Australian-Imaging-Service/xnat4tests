@@ -1,9 +1,9 @@
 Xnat4Tests
 ----------
 
-Xnat4Tests provides a method for launching a basic XNAT repository instance
-within a single Docker container to facilitate the testing API calls and container
-service execution by third-party packages.
+Xnat4Tests provides a helper functions for testing third party tools that access the XNAT
+API or container service, primarily a means to launch a basic XNAT repository instance
+within a single Docker container.
 
 The XNAT container service plugin is installed by default and is configured to use
 the same Docker host as the XNAT instance.
@@ -25,7 +25,7 @@ The basic usage is as follows:
 
     # Launch the instance (NB: it takes quite while for an XNAT instance to start). If an existing
     # container with the reserved name is already running it is returned instead
-    xnat_container = launch_xnat()
+    launch_xnat()
 
     # Run your tests
     with connect() as login:
