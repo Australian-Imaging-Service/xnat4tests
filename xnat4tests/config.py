@@ -1,6 +1,6 @@
 from pathlib import Path
 
-SRC_DIR = Path(__file__).parent / 'src'
+SRC_DIR = Path(__file__).parent / 'docker-src'
 ROOT_DIR = Path.home() / '.xnat4tests'
 ROOT_DIR.mkdir(exist_ok=True)
 BUILD_DIR = ROOT_DIR / 'build'
