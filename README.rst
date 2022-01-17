@@ -30,6 +30,10 @@ The basic usage is as follows:
 
     # Run your tests
     with connect() as login:
+        PROJECT = 'MYPROJECT'
+        SUBJECT = 'MYSUBJECT'
+        SESSION = 'MYSESSION'
+    
         login.put(f'/data/archive/projects/MY_TEST_PROJECT')
 
         # Create subject
