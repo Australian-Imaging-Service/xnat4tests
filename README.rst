@@ -1,6 +1,9 @@
 Xnat4Tests
 ----------
 .. image:: https://github.com/australian-imaging-service/xnat4tests/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/Australian-Imaging-Service/xnat4tests/actions/workflows/test.yml
+.. image:: https://img.shields.io/pypi/v/xnat4tests.svg
+   :target: https://pypi.python.org/pypi/xnat4tests/
 
 Xnat4Tests provides a helper functions for testing third party tools that access the XNAT
 API or container service, primarily a means to launch a basic XNAT repository instance
