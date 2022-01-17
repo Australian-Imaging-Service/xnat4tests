@@ -2,7 +2,7 @@ Xnat4Tests
 ----------
 
 Xnat4Tests provides a method for launching a basic XNAT repository instance
-within a single Docker image to facilitate the testing API calls and container
+within a single Docker container to facilitate the testing API calls and container
 service execution by third-party packages.
 
 The 'home/logs', 'home/work', 'build', 'archive', 'prearchive' directories are
