@@ -88,6 +88,11 @@ def launch_xnat():
             'auto-cleanup': True,
             'swarm-constraints': [],
             'ping': True})
+
+        # Set registry URI
+        # login.post('/xapi/docker/hubs/1', json={
+        #     "name": "testregistry",
+        #     "url": f"https://host.docker.internal"})
     
     return container
 
@@ -108,6 +113,7 @@ def launch_docker_registry():
             ports={'5000/tcp': REGISTRY_PORT},
             network=xnat_docker_network.id,
             remove=True, name=DOCKER_REGISTRY_CONTAINER)
+        
     return container
 
 
