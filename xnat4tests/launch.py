@@ -1,3 +1,4 @@
+import stat
 import shutil
 import time
 import requests
@@ -45,6 +46,16 @@ def launch_xnat():
         for  dname in XNAT_MNT_DIRS:
             dpath = XNAT_ROOT_DIR / dname
             dpath.mkdir(parents=True)
+            # Set set-group-ID bit so sub-directories (created by root in
+            # Docker inherit GID of launching user)
+            dpath.chmod(stat.S_IRUSR |
+                        stat.S_IWUSR |
+                        stat.S_IXUSR |
+                        stat.S_IRGRP |
+                        stat.S_IWGRP |
+                        stat.S_IXGRP |
+                        stat.S_IROTH |
+                        stat.S_ISGID)  
             volumes[str(dpath)] = {'bind': '/data/xnat/' + dname,
                                    'mode': 'rw'}
 
