@@ -61,3 +61,14 @@ Usage
 
     # Remove the container after you are done (not strictly necessary)
     stop_xnat()
+
+Alternatively, if you are using Pytest then you can set up the connection as
+a fixture in your ``conftest.py`` with
+
+.. code-block:: python
+
+    @pytest.fixture(scope='session')
+    def xnat_login():
+        xnat4tests.launch_xnat()
+        yield xnat4tests.connect()
+        xnat4tests.stop_xnat()
