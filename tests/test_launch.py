@@ -1,30 +1,40 @@
 
+import tempfile
+from pathlib import Path
+import pytest
 from xnat4tests import launch_xnat, stop_xnat, connect, config
 
 
-def test_launch():
+@pytest.fixture(scope='session')
+def login():
+    launch_xnat()
+    yield connect()
+    stop_xnat()
+
+
+def test_launch(login):
 
     PROJECT = 'MY_TEST_PROJECT'   
     SUBJECT = 'MY_TEST_SUBJECT'
     SESSION = 'MY_TEST_SESSION'
 
-    # Launch the instance (NB: it takes quite while for an XNAT instance to start). If an existing
-    # container with the reserved name is already running it is returned instead
-    launch_xnat()
+    # Create project
+    login.put(f'/data/archive/projects/{PROJECT}')
 
-    # Run your tests
-    with connect() as login:
-        # Create project
-        login.put(f'/data/archive/projects/{PROJECT}')
+    # Create subject
+    xsubject = login.classes.SubjectData(label=SUBJECT,
+                                            parent=login.projects[PROJECT])
+    # Create session
+    xsession = login.classes.MrSessionData(label=SESSION, parent=xsubject)
 
-        # Create subject
-        xsubject = login.classes.SubjectData(label=SUBJECT,
-                                             parent=login.projects[PROJECT])
-        # Create session
-        login.classes.MrSessionData(label=SESSION, parent=xsubject)
+    temp_dir = Path(tempfile.mkdtemp())
+    a_file = temp_dir / 'a_file.txt'
+    with open(a_file, 'w') as f:
+        f.write('a file')
+    
+    xresource = login.classes.ResourceCatalog(
+        parent=xsession, label='A_RESOURCE', format='text')
+    xresource.upload(str(a_file), 'a_file')
 
     assert [p.name for p in (config.XNAT_ROOT_DIR / 'archive').iterdir()] == [PROJECT]
-
-    # Remove the container after you are done (not strictly necessary)
-    stop_xnat()
-    
+    assert [p.name for p in (config.XNAT_ROOT_DIR / 'archive' / PROJECT / 'arc001').iterdir()] == [SESSION]

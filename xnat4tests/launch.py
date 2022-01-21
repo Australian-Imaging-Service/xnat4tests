@@ -55,6 +55,7 @@ def launch_xnat():
                         stat.S_IWGRP |
                         stat.S_IXGRP |
                         stat.S_IROTH |
+                        stat.S_IXOTH |
                         stat.S_ISGID)  
             volumes[str(dpath)] = {'bind': '/data/xnat/' + dname,
                                    'mode': 'rw'}
