@@ -6,15 +6,29 @@ import docker
 import xnat
 
 
-from .config import (
-    SRC_DIR, BUILD_DIR, DOCKER_IMAGE, DOCKER_CONTAINER, XNAT_MNT_DIRS,
-    XNAT_PORT, XNAT_ROOT_DIR,
-    DOCKER_NETWORK_NAME, XNAT_URI, REGISTRY_PORT, XNAT_USER, XNAT_PASSWORD,
-    DOCKER_REGISTRY_IMAGE, DOCKER_REGISTRY_CONTAINER, CONNECTION_ATTEMPTS,
-    CONNECTION_ATTEMPT_SLEEP)
+from .config import CONFIG
 
 
-def launch_xnat():
+def launch_xnat(
+        src_dir=CONFIG['src_dir'],
+        root_dir=CONFIG['root_dir'],
+        build_dir=CONFIG['build_dir'],
+        xnat_root_dir=CONFIG['xnat_root_dir'],
+        xnat_mnt_dirs=CONFIG['xnat_mnt_dirs'],
+        docker_image=CONFIG['docker_image'],
+        docker_container=CONFIG['docker_container'],
+        docker_host=CONFIG['docker_host'],
+        xnat_port=CONFIG['xnat_port'],
+        docker_registry_image=CONFIG['docker_registry_image'],
+        docker_registry_container=CONFIG['docker_registry_container'],
+        docker_network_name=CONFIG['docker_network_name'],
+        registry_port=CONFIG['registry_port'],
+        xnat_uri=CONFIG['xnat_uri'],
+        registry_uri=CONFIG['registry_uri'],
+        xnat_user=CONFIG['xnat_user'],
+        xnat_password=CONFIG['xnat_password'],
+        connection_attempts=CONFIG['connection_attempts'],
+        connection_attempt_sleep=CONFIG['connection_attempt_sleep']):
     """Starts an XNAT repository within a single Docker container that has
     has the container service plugin configured to access the Docker socket
     to launch sibling containers.
@@ -28,23 +42,23 @@ def launch_xnat():
     dc = docker.from_env()
 
     try:
-        image = dc.images.get(DOCKER_IMAGE)
+        image = dc.images.get(docker_image)
     except docker.errors.ImageNotFound:
-        shutil.rmtree(BUILD_DIR, ignore_errors=True)
-        shutil.copytree(SRC_DIR, BUILD_DIR)
-        image, _ = dc.images.build(path=str(BUILD_DIR), tag=DOCKER_IMAGE)
+        shutil.rmtree(build_dir, ignore_errors=True)
+        shutil.copytree(src_dir, build_dir)
+        image, _ = dc.images.build(path=str(build_dir), tag=docker_image)
     
     try:
-        container = dc.containers.get(DOCKER_CONTAINER)
+        container = dc.containers.get(docker_container)
     except docker.errors.NotFound:
         volumes = {'/var/run/docker.sock': {'bind': '/var/run/docker.sock',
                                             'mode': 'rw'}}
         # Mount in the XNAT root directory for debugging and to allow access
         # from the Docker host when using the container service
         # Clear previous ROOT directories
-        shutil.rmtree(XNAT_ROOT_DIR, ignore_errors=True)
-        for  dname in XNAT_MNT_DIRS:
-            dpath = XNAT_ROOT_DIR / dname
+        shutil.rmtree(xnat_root_dir, ignore_errors=True)
+        for  dname in xnat_mnt_dirs:
+            dpath = xnat_root_dir / dname
             dpath.mkdir(parents=True)
             # Set set-group-ID bit so sub-directories (created by root in
             # Docker inherit GID of launching user)
@@ -62,8 +76,8 @@ def launch_xnat():
 
         container = dc.containers.run(
             image.tags[0], detach=True, ports={
-                '8080/tcp': XNAT_PORT},
-            remove=True, name=DOCKER_CONTAINER,
+                '8080/tcp': xnat_port},
+            remove=True, name=docker_container,
             # Expose the XNAT archive dir outside of the XNAT docker container
             # to simulate what the XNAT container service exposes to running
             # pipelines, and the Docker socket for the container service to
@@ -74,14 +88,14 @@ def launch_xnat():
 
     # Need to give time for XNAT to get itself ready after it has
     # started so we try multiple times until giving up trying to connect
-    for attempts in range(1, CONNECTION_ATTEMPTS + 1):
+    for attempts in range(1, connection_attempts + 1):
         try:
             login = connect()
         except (xnat.exceptions.XNATError, requests.ConnectionError):
-            if attempts == CONNECTION_ATTEMPTS:
+            if attempts == connection_attempts:
                 raise
             else:
-                time.sleep(CONNECTION_ATTEMPT_SLEEP)
+                time.sleep(connection_attempt_sleep)
         else:
             break
 
@@ -94,7 +108,7 @@ def launch_xnat():
             'cert-path': '',
             'swarm-mode': False,
             'path-translation-xnat-prefix': '/data/xnat',
-            'path-translation-docker-prefix': str(XNAT_ROOT_DIR),
+            'path-translation-docker-prefix': str(xnat_root_dir),
             'pull-images-on-xnat-init': False,
             'container-user': '',
             'auto-cleanup': True,
@@ -113,18 +127,18 @@ def launch_docker_registry():
     xnat_docker_network = docker_network()
     dc = docker.from_env()
     try:
-        image = dc.images.get(DOCKER_REGISTRY_IMAGE)
+        image = dc.images.get(docker_registry_image)
     except docker.errors.ImageNotFound:
-        image = dc.images.pull(DOCKER_REGISTRY_IMAGE)
+        image = dc.images.pull(docker_registry_image)
 
     try:
-        container = dc.containers.get(DOCKER_REGISTRY_CONTAINER)
+        container = dc.containers.get(docker_registry_container)
     except docker.errors.NotFound:
         container = dc.containers.run(
             image.tags[0], detach=True,
-            ports={'5000/tcp': REGISTRY_PORT},
+            ports={'5000/tcp': registry_port},
             network=xnat_docker_network.id,
-            remove=True, name=DOCKER_REGISTRY_CONTAINER)
+            remove=True, name=docker_registry_container)
         
     return container
 
@@ -134,17 +148,17 @@ def stop_xnat():
 
 
 def stop_docker_registry():
-    launch_docker_registry().stop(DOCKER_REGISTRY_CONTAINER)
+    launch_docker_registry().stop(docker_registry_container)
 
 
 def docker_network():
     dc = docker.from_env()
     try:
-        network = dc.networks.get(DOCKER_NETWORK_NAME)
+        network = dc.networks.get(docker_network_name)
     except docker.errors.NotFound:
-        network = dc.networks.create(DOCKER_NETWORK_NAME)
+        network = dc.networks.create(docker_network_name)
     return network
 
 
 def connect():
-    return xnat.connect(XNAT_URI, user=XNAT_USER, password=XNAT_PASSWORD)
+    return xnat.connect(xnat_uri, user=xnat_user, password=xnat_password)

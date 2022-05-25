@@ -19,6 +19,8 @@ setup(
     extras_require={
         'test': [
             'pytest>=5.4.3']},
+    entry_points={
+        'console_scripts': ['launch_xnat4tests=xnat4tests.launch:launch_xnat']},
     include_package_data=True,
     cmdclass=versioneer.get_cmdclass(),
     classifiers=(
