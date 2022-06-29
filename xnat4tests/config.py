@@ -20,7 +20,7 @@ CONFIG = {
     'docker_registry_container': 'xnat4tests-docker-registry',
     'docker_network_name': 'xnat4tests',
     'registry_port': '80',  # Must be 80 to avoid bug in XNAT CS config,
-    'xnat_uri': f'http: //{DOCKER_HOST}: {XNAT_PORT}',
+    'xnat_uri': f'http://{DOCKER_HOST}:{XNAT_PORT}',
     'registry_uri': f'{DOCKER_HOST}',  # : {REGISTRY_PORT}',
     'xnat_user': 'admin',
     'xnat_password': 'admin',

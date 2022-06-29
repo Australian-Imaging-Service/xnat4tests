@@ -82,7 +82,7 @@ def launch_xnat(
             # to simulate what the XNAT container service exposes to running
             # pipelines, and the Docker socket for the container service to
             # to use
-            network=docker_network().id,
+            network=docker_network(docker_network_name).id,
             volumes=volumes)
 
 
@@ -90,7 +90,7 @@ def launch_xnat(
     # started so we try multiple times until giving up trying to connect
     for attempts in range(1, connection_attempts + 1):
         try:
-            login = connect()
+            login = connect(xnat_uri, xnat_user, xnat_password)
         except (xnat.exceptions.XNATError, requests.ConnectionError):
             if attempts == connection_attempts:
                 raise
@@ -123,7 +123,8 @@ def launch_xnat(
     return container
 
 
-def launch_docker_registry():
+def launch_docker_registry(docker_registry_image, docker_registry_container,
+                           registry_port):
     xnat_docker_network = docker_network()
     dc = docker.from_env()
     try:
@@ -147,11 +148,11 @@ def stop_xnat():
     launch_xnat().stop()
 
 
-def stop_docker_registry():
+def stop_docker_registry(docker_registry_container):
     launch_docker_registry().stop(docker_registry_container)
 
 
-def docker_network():
+def docker_network(docker_network_name):
     dc = docker.from_env()
     try:
         network = dc.networks.get(docker_network_name)
@@ -160,5 +161,5 @@ def docker_network():
     return network
 
 
-def connect():
+def connect(xnat_uri, xnat_user, xnat_password):
     return xnat.connect(xnat_uri, user=xnat_user, password=xnat_password)
