@@ -1,8 +1,8 @@
 FROM tomcat:9-jre8-alpine
 
 # User configurable arguments
-ARG XNAT_VER=1.8.3
-ARG XNAT_CS_PLUGIN_VER=3.1.0
+ARG XNAT_VER=1.8.4.1
+ARG XNAT_CS_PLUGIN_VER=3.1.1
 ARG XNAT_BATCH_LAUNCH_PLUGIN_VER=0.5.0
 ARG XNAT_ROOT=/data/xnat
 ARG XNAT_HOME=/data/xnat/home
