@@ -2,7 +2,7 @@
 import tempfile
 from pathlib import Path
 import pytest
-from xnat4tests import launch_xnat, stop_xnat, connect, config
+from xnat4tests import default_config, launch_xnat, stop_xnat, connect
 
 
 @pytest.fixture(scope='session')
@@ -36,5 +36,5 @@ def test_launch(login):
         parent=xsession, label='A_RESOURCE', format='text')
     xresource.upload(str(a_file), 'a_file')
 
-    assert [p.name for p in (config.XNAT_ROOT_DIR / 'archive').iterdir()] == [PROJECT]
-    assert [p.name for p in (config.XNAT_ROOT_DIR / 'archive' / PROJECT / 'arc001').iterdir()] == [SESSION]
+    assert [p.name for p in (default_config.XNAT_ROOT_DIR / 'archive').iterdir()] == [PROJECT]
+    assert [p.name for p in (default_config.XNAT_ROOT_DIR / 'archive' / PROJECT / 'arc001').iterdir()] == [SESSION]
