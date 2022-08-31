@@ -4,7 +4,7 @@ import time
 import requests
 import docker
 import xnat
-from config import config
+from .config import config
 
 
 def launch_xnat():
@@ -28,8 +28,7 @@ def launch_xnat():
         image, _ = dc.images.build(
             path=str(config["build_dir"]),
             tag=config["docker_image"],
-            buildargs={
-                })
+            buildargs=config['build_args'])
 
     try:
         container = dc.containers.get(config["docker_container"])

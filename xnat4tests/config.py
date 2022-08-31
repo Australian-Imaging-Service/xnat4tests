@@ -32,8 +32,8 @@ config.update({
 # XNAT build args
 config["build_args"] = {
     "XNAT_VER": "1.8.5",
-    "XNAT_CS_PLUGIN_VER": "3.1.1",
-    "XNAT_BATCH_LAUNCH_PLUGIN_VER": "0.5.0",
+    "XNAT_CS_PLUGIN_VER": "3.2.0",
+    "XNAT_BATCH_LAUNCH_PLUGIN_VER": "0.6.0",
     "JAVA_MS": "256m",
     "JAVA_MX": "2g"
 }
