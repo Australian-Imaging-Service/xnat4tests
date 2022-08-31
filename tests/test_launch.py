@@ -36,10 +36,10 @@ def test_launch(login):
     )
     xresource.upload(str(a_file), "a_file")
 
-    assert [p.name for p in (config["XNAT_ROOT_DIR"] / "archive").iterdir()] == [
+    assert [p.name for p in (config["xnat_root_dir"] / "archive").iterdir()] == [
         PROJECT
     ]
     assert [
         p.name
-        for p in (config["XNAT_ROOT_DIR"] / "archive" / PROJECT / "arc001").iterdir()
+        for p in (config["xnat_root_dir"] / "archive" / PROJECT / "arc001").iterdir()
     ] == [SESSION]
