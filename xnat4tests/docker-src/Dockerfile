@@ -1,9 +1,9 @@
 FROM tomcat:9-jre8-alpine
 
 # User configurable arguments
-ARG XNAT_VER=1.8.4.1
-ARG XNAT_CS_PLUGIN_VER=3.1.1
-ARG XNAT_BATCH_LAUNCH_PLUGIN_VER=0.5.0
+ARG XNAT_VER
+ARG XNAT_CS_PLUGIN_VER
+ARG XNAT_BATCH_LAUNCH_PLUGIN_VER
 ARG XNAT_ROOT=/data/xnat
 ARG XNAT_HOME=/data/xnat/home
 ARG JAVA_MS=256m
@@ -39,8 +39,8 @@ RUN rm /usr/local/bin/make-xnat-config.sh
 RUN wget --no-verbose --output-document=/tmp/xnat-web-${XNAT_VER}.war https://api.bitbucket.org/2.0/repositories/xnatdev/xnat-web/downloads/xnat-web-${XNAT_VER}.war
 RUN unzip -o -d ${TOMCAT_XNAT_FOLDER_PATH} /tmp/xnat-web-${XNAT_VER}.war
 RUN rm -f /tmp/xnat-web-${XNAT_VER}.war
-RUN wget --output-document ${XNAT_HOME}/plugins/container-service-plugin.jar https://bitbucket.org/xnatdev/container-service/downloads/container-service-${XNAT_CS_PLUGIN_VER}-fat.jar
-RUN wget --output-document ${XNAT_HOME}/plugins/batch-launch-plugin.jar https://bitbucket.org/xnatx/xnatx-batch-launch-plugin/downloads/batch-launch-plugin-${XNAT_BATCH_LAUNCH_PLUGIN_VER}.jar
+RUN wget --output-document ${XNAT_HOME}/plugins/container-service-plugin.jar https://api.bitbucket.org/2.0/repositories/xnatdev/container-service/downloads/container-service-${XNAT_CS_PLUGIN_VER}-fat.jar
+RUN wget --output-document ${XNAT_HOME}/plugins/batch-launch-plugin.jar https://api.bitbucket.org/2.0/repositories/xnatx/xnatx-batch-launch-plugin/downloads/batch-launch-${XNAT_BATCH_LAUNCH_PLUGIN_VER}.jar
 RUN apk del wget
 RUN mkdir /var/log/tomcat
 ENV XNAT_HOME=${XNAT_HOME} XNAT_DATASOURCE_USERNAME=${XNAT_DATASOURCE_USERNAME} PGPASSWORD=${XNAT_DATASOURCE_PASSWORD}
