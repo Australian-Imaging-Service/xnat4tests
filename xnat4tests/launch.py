@@ -4,7 +4,7 @@ import time
 import requests
 import docker
 import xnat
-from .config import config
+from ._config import config
 
 
 def launch_xnat():

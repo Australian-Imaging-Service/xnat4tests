@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 import pytest
 from xnat4tests import launch_xnat, stop_xnat, connect
-from xnat4tests.config import config
+from xnat4tests import config
 
 
 @pytest.fixture(scope="session")
