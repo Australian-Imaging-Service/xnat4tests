@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 
 ROOT_DIR = Path.home() / ".xnat4tests"
+config_json_path = ROOT_DIR / "config.json"
+
 
 config = {
     "src_dir": Path(__file__).parent / "docker-src",
@@ -38,12 +40,11 @@ config["build_args"] = {
     "JAVA_MX": "2g"
 }
 
-
 # Load custom config saved in "config.json" and override defaults
-config_path = ROOT_DIR / "config.json"
-
-if config_path.exists():
-    with open(config_path) as f:
+if config_json_path.exists():
+    with open(config_json_path) as f:
         custom_config = json.load(f)
 
-    config.update(custom_config)
+    config.update((k, v) for k, v in custom_config.items() if k != 'build_args')
+    if "build_args" in custom_config:
+        config["build_args"].update(custom_config["build_args"])
