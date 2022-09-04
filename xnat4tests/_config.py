@@ -1,8 +1,8 @@
-import json
+import yaml
 from pathlib import Path
 
 ROOT_DIR = Path.home() / ".xnat4tests"
-config_json_path = ROOT_DIR / "config.json"
+config_file_path = ROOT_DIR / "config.yaml"
 
 
 config = {
@@ -41,9 +41,9 @@ config["build_args"] = {
 }
 
 # Load custom config saved in "config.json" and override defaults
-if config_json_path.exists():
-    with open(config_json_path) as f:
-        custom_config = json.load(f)
+if config_file_path.exists():
+    with open(config_file_path) as f:
+        custom_config = yaml.load(f)
 
     config.update((k, v) for k, v in custom_config.items() if k != 'build_args')
     if "build_args" in custom_config:

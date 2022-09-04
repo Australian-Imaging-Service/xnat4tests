@@ -15,10 +15,16 @@ setup(
     install_requires=[
         'docker>=5.0.2',
         'xnat>=0.3.17',
-        'requests>=2.10.0'],
+        'requests>=2.10.0',
+        'PyYAML>=6.0'],
     extras_require={
         'test': [
             'pytest>=5.4.3']},
+    entry_points={
+        "console_scripts": [
+            "xnat4tests_launch=xnat4tests.launch:launch_xnat",
+        ]
+    },
     include_package_data=True,
     cmdclass=versioneer.get_cmdclass(),
     classifiers=(
