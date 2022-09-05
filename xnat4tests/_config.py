@@ -1,14 +1,19 @@
+import os
 import yaml
 import warnings
 from pathlib import Path
 
-ROOT_DIR = Path.home() / ".xnat4tests"
-config_file_path = ROOT_DIR / "config.yaml"
+try:
+    XNAT4TESTS_HOME = Path(os.environ['XNAT4TESTS_HOME'])
+except KeyError:
+    XNAT4TESTS_HOME = Path.home() / ".xnat4tests"
+config_file_path = XNAT4TESTS_HOME / "config.yaml"
 
+XNAT4TESTS_HOME.mkdir(exist_ok=True)
 
 config = {
-    "build_dir": ROOT_DIR / "build",
-    "xnat_root_dir": ROOT_DIR / "xnat_root",
+    "build_dir": XNAT4TESTS_HOME / "build",
+    "xnat_root_dir": XNAT4TESTS_HOME / "xnat_root",
     "xnat_mnt_dirs": ["home/logs", "home/work", "build", "archive", "prearchive"],
     "docker_image": "xnat4tests",
     "docker_container": "xnat4tests",
@@ -60,3 +65,13 @@ if config_file_path.exists():
             f"Changing XNAT registry port from 80 to {config['registry_port']} is "
             "currently not compatible with the XNAT container service image pull "
             "feature")
+
+    config["build_dir"] = Path(config["build_dir"])
+    if not config["build_dir"].parent.exists():
+        raise Exception(
+            f"Parent of build directory {str(config['build_dir'].parent)} does not exist")
+
+    config["xnat_root_dir"] = Path(config["xnat_root_dir"])
+    if not config["xnat_root_dir"].parent.exists():
+        raise Exception(
+            f"Parent of XNAT root directory {str(config['xnat_root_dir'].parent)} does not exist")
