@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 import yaml
 import pytest
+import docker
 
 tmp_home_dir = tempfile.mkdtemp()
 with patch.dict(os.environ, {"XNAT4TESTS_HOME": tmp_home_dir}):
@@ -29,12 +30,27 @@ def home_dir():  # Makes the home dir show up on test output
 
 @pytest.fixture(scope="session")
 def login():
+    dc = docker.from_env()
+    try:
+        container = dc.containers.get(config["docker_container"])
+    except docker.errors.NotFound:
+        pass
+    else:
+        container.stop()
+
+    try:
+        image = dc.images.get(config["docker_image"])
+    except docker.errors.ImageNotFound:
+        pass
+    else:
+        dc.images.remove(image.id)
+
     launch_xnat()
     yield connect()
     stop_xnat()
 
 
-def test_config(home_dir):
+def test_config(login, home_dir):
 
     assert config["xnat_root_dir"] == Path(home_dir) / "xnat_root_changed"
     assert config["xnat_root_dir"].exists()
