@@ -43,7 +43,7 @@ config["build_args"] = {
 # Load custom config saved in "config.json" and override defaults
 if config_file_path.exists():
     with open(config_file_path) as f:
-        custom_config = yaml.load(f)
+        custom_config = yaml.load(f, Loader=yaml.Loader)
 
     config.update((k, v) for k, v in custom_config.items() if k != 'build_args')
     if "build_args" in custom_config:
