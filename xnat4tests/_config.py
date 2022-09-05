@@ -12,9 +12,9 @@ config_file_path = XNAT4TESTS_HOME / "config.yaml"
 XNAT4TESTS_HOME.mkdir(exist_ok=True)
 
 config = {
-    "build_dir": XNAT4TESTS_HOME / "build",
     "xnat_root_dir": XNAT4TESTS_HOME / "xnat_root",
     "xnat_mnt_dirs": ["home/logs", "home/work", "build", "archive", "prearchive"],
+    "docker_build_dir": XNAT4TESTS_HOME / "build",
     "docker_image": "xnat4tests",
     "docker_container": "xnat4tests",
     "docker_host": "localhost",
@@ -32,10 +32,6 @@ config = {
     "connection_attempt_sleep": 5,
 }
 
-config.update({
-    "xnat_uri": f"http://{config['docker_host']}:{config['xnat_port']}",
-    "registry_uri": f"{config['docker_host']}"  # :{REGISTRY_PORT}',
-})
 
 # XNAT build args
 config["build_args"] = {
@@ -66,10 +62,11 @@ if config_file_path.exists():
             "currently not compatible with the XNAT container service image pull "
             "feature")
 
-    config["build_dir"] = Path(config["build_dir"])
-    if not config["build_dir"].parent.exists():
+    config["docker_build_dir"] = Path(config["docker_build_dir"])
+    if not config["docker_build_dir"].parent.exists():
         raise Exception(
-            f"Parent of build directory {str(config['build_dir'].parent)} does not exist")
+            f"Parent of build directory {str(config['docker_build_dir'].parent)} "
+            "does not exist")
 
     config["xnat_root_dir"] = Path(config["xnat_root_dir"])
     if not config["xnat_root_dir"].parent.exists():

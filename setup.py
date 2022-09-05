@@ -15,6 +15,7 @@ setup(
     install_requires=[
         'docker>=5.0.2',
         'xnat>=0.3.17',
+        'click>=8.1.3',
         'requests>=2.10.0',
         'PyYAML>=6.0'],
     extras_require={
@@ -22,7 +23,7 @@ setup(
             'pytest>=5.4.3']},
     entry_points={
         "console_scripts": [
-            "xnat4tests_launch=xnat4tests.launch:launch_xnat",
+            "xnat4tests_launch=xnat4tests.launch:cli",
         ]
     },
     include_package_data=True,

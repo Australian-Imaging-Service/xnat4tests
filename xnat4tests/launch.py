@@ -3,12 +3,20 @@ import shutil
 import time
 import requests
 from pathlib import Path
+import logging
 import docker
+import click
 import xnat
 from ._config import config
 
 
+logger = logging.getLogger("xnat4tests")
+
+
 SRC_DIR = Path(__file__).parent / "docker-src"
+
+xnat_uri = f"http://{config['docker_host']}:{config['xnat_port']}"
+registry_uri = f"{config['docker_host']}"
 
 
 def launch_xnat():
@@ -27,16 +35,33 @@ def launch_xnat():
     try:
         image = dc.images.get(config["docker_image"])
     except docker.errors.ImageNotFound:
-        shutil.rmtree(config["build_dir"], ignore_errors=True)
-        shutil.copytree(SRC_DIR, config["build_dir"])
-        image, _ = dc.images.build(
-            path=str(config["build_dir"]),
-            tag=config["docker_image"],
-            buildargs=config['build_args'])
+        logger.info(
+            "Building %s in '%s' directory",
+            config["docker_image"],
+            str(config["docker_build_dir"]),
+        )
+        shutil.rmtree(config["docker_build_dir"], ignore_errors=True)
+        shutil.copytree(SRC_DIR, config["docker_build_dir"])
+        try:
+            image, _ = dc.images.build(
+                path=str(config["docker_build_dir"]),
+                tag=config["docker_image"],
+                buildargs=config["build_args"],
+            )
+        except docker.errors.BuildError as e:
+            build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
+            raise RuntimeError(
+                f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
+                f"failed with the following errors:\n\n{build_log}"
+            )
+        logger.info("Built %s successfully", config["docker_image"])
 
     try:
         container = dc.containers.get(config["docker_container"])
     except docker.errors.NotFound:
+        logger.info(
+            "Did not find %s container, relaunching", config["docker_container"]
+        )
         volumes = {
             "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}
         }
@@ -75,9 +100,11 @@ def launch_xnat():
             network=docker_network().id,
             volumes=volumes,
         )
+        logger.info("%s launched successfully", config["docker_container"])
 
     # Need to give time for XNAT to get itself ready after it has
     # started so we try multiple times until giving up trying to connect
+    logger.info("Attempting to connect to %s", xnat_uri)
     for attempts in range(1, config["connection_attempts"] + 1):
         try:
             login = connect()
@@ -85,11 +112,18 @@ def launch_xnat():
             if attempts == config["connection_attempts"]:
                 raise
             else:
+                logger.debug(
+                    "Attempt %d/%d to connect to %s failed, retrying",
+                    config["connection_attempts"],
+                    config["connection_attempt_sleep"],
+                    xnat_uri,
+                )
                 time.sleep(config["connection_attempt_sleep"])
         else:
             break
 
     # Set the path translations to point to the mounted XNAT home directory
+    logger.info("Configuing docker server for container service")
     with login:
         login.post(
             "/xapi/docker/server",
@@ -109,7 +143,7 @@ def launch_xnat():
             },
         )
 
-        # Set registry URI
+        # Set registry URI, Not working due to limitations in XNAT UI
         # login.post('/xapi/docker/hubs/1', json={
         #     "name": "testregistry",
         #     "url": f"https://host.docker.internal"})
@@ -123,6 +157,7 @@ def launch_docker_registry():
     try:
         image = dc.images.get(config["docker_registry_image"])
     except docker.errors.ImageNotFound:
+        logger.info(f"Pulling {config['docker_registry_image']}")
         image = dc.images.pull(config["docker_registry_image"])
 
     try:
@@ -141,7 +176,14 @@ def launch_docker_registry():
 
 
 def stop_xnat():
-    launch_xnat().stop()
+    dc = docker.from_env()
+    try:
+        container = dc.containers.get(config["docker_container"])
+    except docker.errors.NotFound:
+        logger.info("Test XNAT was not running at %s", config["docker_container"])
+    else:
+        logger.info("Stopping test XNAT running at %s", config["docker_container"])
+        container.stop()
 
 
 def stop_docker_registry():
@@ -158,6 +200,42 @@ def docker_network():
 
 
 def connect():
+    logger.info("Connecting to %s as '%s'", xnat_uri, config["xnat_user"])
     return xnat.connect(
-        config["xnat_uri"], user=config["xnat_user"], password=config["xnat_password"]
+        xnat_uri, user=config["xnat_user"], password=config["xnat_password"]
     )
+
+
+@click.command()
+@click.option(
+    "--loglevel",
+    "-l",
+    type=click.Choice(
+        [
+            "critical",
+            "fatal",
+            "error",
+            "warning",
+            "warn",
+            "info",
+            "debug",
+        ]
+    ),
+    help="Set the level of logging detail",
+)
+def cli(loglevel):
+
+    set_loggers(loglevel)
+
+    launch_xnat()
+
+
+def set_loggers(loglevel):
+
+    logger.setLevel(loglevel.upper())
+    ch = logging.StreamHandler()
+    ch.setLevel(loglevel.upper())
+    ch.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
+    logger.addHandler(ch)

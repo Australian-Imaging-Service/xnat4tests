@@ -73,4 +73,3 @@ USER root
 # Use supervisord to launch postgres and tomcat
 COPY supervisord.conf /etc/supervisord.conf
 CMD ["/usr/bin/supervisord"]
-

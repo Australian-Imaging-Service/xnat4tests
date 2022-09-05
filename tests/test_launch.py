@@ -6,6 +6,7 @@ import yaml
 import pytest
 import docker
 
+
 tmp_home_dir = tempfile.mkdtemp()
 with patch.dict(os.environ, {"XNAT4TESTS_HOME": tmp_home_dir}):
     with open(Path(tmp_home_dir) / "config.yaml", "w") as f:
@@ -20,7 +21,8 @@ with patch.dict(os.environ, {"XNAT4TESTS_HOME": tmp_home_dir}):
             },
             f,
         )
-    from xnat4tests import config, launch_xnat, stop_xnat, connect
+    from xnat4tests import config, launch_xnat, stop_xnat, connect, set_loggers
+    set_loggers('debug')
 
 
 @pytest.fixture(scope="session")
