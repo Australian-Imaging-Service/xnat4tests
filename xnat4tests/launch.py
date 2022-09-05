@@ -2,9 +2,13 @@ import stat
 import shutil
 import time
 import requests
+from pathlib import Path
 import docker
 import xnat
 from ._config import config
+
+
+SRC_DIR = Path(__file__).parent / "docker-src"
 
 
 def launch_xnat():
@@ -24,7 +28,7 @@ def launch_xnat():
         image = dc.images.get(config["docker_image"])
     except docker.errors.ImageNotFound:
         shutil.rmtree(config["build_dir"], ignore_errors=True)
-        shutil.copytree(config["src_dir"], config["build_dir"])
+        shutil.copytree(SRC_DIR, config["build_dir"])
         image, _ = dc.images.build(
             path=str(config["build_dir"]),
             tag=config["docker_image"],
