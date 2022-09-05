@@ -22,7 +22,8 @@ with patch.dict(os.environ, {"XNAT4TESTS_HOME": tmp_home_dir}):
             f,
         )
     from xnat4tests import config, launch_xnat, stop_xnat, connect, set_loggers
-    set_loggers('debug')
+
+    set_loggers("debug")
 
 
 @pytest.fixture(scope="session")
@@ -60,7 +61,13 @@ def test_config(login, home_dir):
     assert config["docker_container"] == "xnat4tests_unittest"
     assert config["xnat_port"] == "8090"
     assert config["registry_port"] == "5555"
-    assert config["build_args"] == {"JAVA_MX": "1g"}
+    assert config["build_args"] == {
+        "XNAT_VER": "1.8.5",
+        "XNAT_CS_PLUGIN_VER": "3.2.0",
+        "XNAT_BATCH_LAUNCH_PLUGIN_VER": "0.6.0",
+        "JAVA_MS": "256m",
+        "JAVA_MX": "1g",
+    }
 
 
 def test_launch(login):
