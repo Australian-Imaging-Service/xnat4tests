@@ -128,6 +128,7 @@ def launch_xnat():
                 time.sleep(config["connection_attempt_sleep"])
         else:
             break
+    logger.info("Connected to %s successfully", xnat_uri)
 
     # Set the path translations to point to the mounted XNAT home directory
     logger.info("Configuing docker server for container service")
