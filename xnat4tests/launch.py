@@ -32,33 +32,38 @@ def launch_xnat():
 
     dc = docker.from_env()
 
+    logger.info(
+        "Building %s in '%s' directory",
+        config["docker_image"],
+        str(config["docker_build_dir"]),
+    )
+    shutil.rmtree(config["docker_build_dir"], ignore_errors=True)
+    shutil.copytree(SRC_DIR, config["docker_build_dir"])
     try:
-        image = dc.images.get(config["docker_image"])
-    except docker.errors.ImageNotFound:
-        logger.info(
-            "Building %s in '%s' directory",
-            config["docker_image"],
-            str(config["docker_build_dir"]),
+        image, _ = dc.images.build(
+            path=str(config["docker_build_dir"]),
+            tag=config["docker_image"],
+            buildargs=config["build_args"],
         )
-        shutil.rmtree(config["docker_build_dir"], ignore_errors=True)
-        shutil.copytree(SRC_DIR, config["docker_build_dir"])
-        try:
-            image, _ = dc.images.build(
-                path=str(config["docker_build_dir"]),
-                tag=config["docker_image"],
-                buildargs=config["build_args"],
-            )
-        except docker.errors.BuildError as e:
-            build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
-            raise RuntimeError(
-                f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
-                f"failed with the following errors:\n\n{build_log}"
-            )
-        logger.info("Built %s successfully", config["docker_image"])
+    except docker.errors.BuildError as e:
+        build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
+        raise RuntimeError(
+            f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
+            f"failed with the following errors:\n\n{build_log}"
+        )
+    logger.info("Built %s successfully", config["docker_image"])
 
     try:
         container = dc.containers.get(config["docker_container"])
     except docker.errors.NotFound:
+        relaunch = True
+    else:
+        if container.image != image:
+            relaunch = True
+        else:
+            relaunch = False
+
+    if relaunch:
         logger.info(
             "Did not find %s container, relaunching", config["docker_container"]
         )
@@ -101,6 +106,8 @@ def launch_xnat():
             volumes=volumes,
         )
         logger.info("%s launched successfully", config["docker_container"])
+    else:
+        logger.info("Found existing %s container, reusing", config["docker_container"])
 
     # Need to give time for XNAT to get itself ready after it has
     # started so we try multiple times until giving up trying to connect
@@ -114,8 +121,8 @@ def launch_xnat():
             else:
                 logger.debug(
                     "Attempt %d/%d to connect to %s failed, retrying",
+                    attempts,
                     config["connection_attempts"],
-                    config["connection_attempt_sleep"],
                     xnat_uri,
                 )
                 time.sleep(config["connection_attempt_sleep"])
@@ -221,13 +228,39 @@ def connect():
             "debug",
         ]
     ),
+    default="info",
     help="Set the level of logging detail",
 )
-def cli(loglevel):
+def launch_cli(loglevel):
 
     set_loggers(loglevel)
 
     launch_xnat()
+
+
+@click.command()
+@click.option(
+    "--loglevel",
+    "-l",
+    type=click.Choice(
+        [
+            "critical",
+            "fatal",
+            "error",
+            "warning",
+            "warn",
+            "info",
+            "debug",
+        ]
+    ),
+    default="info",
+    help="Set the level of logging detail",
+)
+def stop_cli(loglevel):
+
+    set_loggers(loglevel)
+
+    stop_xnat()
 
 
 def set_loggers(loglevel):
