@@ -73,7 +73,8 @@ def launch_xnat():
         # Mount in the XNAT root directory for debugging and to allow access
         # from the Docker host when using the container service
         # Clear previous ROOT directories
-        shutil.rmtree(config["xnat_root_dir"], ignore_errors=True)
+        if config["xnat_root_dir"].exists():
+            shutil.rmtree(config["xnat_root_dir"])
         for dname in config["xnat_mnt_dirs"]:
             dpath = config["xnat_root_dir"] / dname
             dpath.mkdir(parents=True)
