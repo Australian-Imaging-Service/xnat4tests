@@ -152,11 +152,6 @@ def launch_xnat():
             },
         )
 
-        # Set registry URI, Not working due to limitations in XNAT UI
-        # login.post('/xapi/docker/hubs/1', json={
-        #     "name": "testregistry",
-        #     "url": f"https://host.docker.internal"})
-
     return container
 
 
@@ -179,6 +174,13 @@ def launch_docker_registry():
             network=xnat_docker_network.id,
             remove=True,
             name=config["docker_registry_container"],
+        )
+
+    with connect() as xlogin:
+        # Set registry URI, Not working due to limitations in XNAT UI
+        xlogin.post(
+            "/xapi/docker/hubs/1",
+            json={"name": "testregistry", "url": "https://host.docker.internal"},
         )
 
     return container
