@@ -32,36 +32,53 @@ def launch_xnat():
 
     dc = docker.from_env()
 
-    logger.info(
-        "Building %s in '%s' directory",
-        config["docker_image"],
-        str(config["docker_build_dir"]),
-    )
-    shutil.rmtree(config["docker_build_dir"], ignore_errors=True)
-    shutil.copytree(SRC_DIR, config["docker_build_dir"])
+    rebuild = False
     try:
-        image, _ = dc.images.build(
-            path=str(config["docker_build_dir"]),
-            tag=config["docker_image"],
-            buildargs=config["build_args"],
+        shutil.rmtree(config["docker_build_dir"])
+    except PermissionError:
+        logger.warning(
+            (
+                "Could not rebuild %s image as don't have write permissions to '%s' "
+                "directory, skipping"
+            ),
+            config["docker_image"],
+            config["docker_build_dir"],
         )
-    except docker.errors.BuildError as e:
-        build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
-        raise RuntimeError(
-            f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
-            f"failed with the following errors:\n\n{build_log}"
-        )
-    logger.info("Built %s successfully", config["docker_image"])
+    except FileNotFoundError:
+        rebuild = True
+    else:
+        rebuild = True
 
+    if rebuild:
+        logger.info(
+            "Building %s in '%s' directory",
+            config["docker_image"],
+            str(config["docker_build_dir"]),
+        )
+        shutil.copytree(SRC_DIR, config["docker_build_dir"])
+        try:
+            image, _ = dc.images.build(
+                path=str(config["docker_build_dir"]),
+                tag=config["docker_image"],
+                buildargs=config["build_args"],
+            )
+        except docker.errors.BuildError as e:
+            build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
+            raise RuntimeError(
+                f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
+                f"failed with the following errors:\n\n{build_log}"
+            )
+        logger.info("Built %s successfully", config["docker_image"])
+
+    relaunch = False
     try:
         container = dc.containers.get(config["docker_container"])
     except docker.errors.NotFound:
         relaunch = True
     else:
         if container.image != image:
+            container.stop()
             relaunch = True
-        else:
-            relaunch = False
 
     if relaunch:
         logger.info(
@@ -73,7 +90,10 @@ def launch_xnat():
         # Mount in the XNAT root directory for debugging and to allow access
         # from the Docker host when using the container service
         # Clear previous ROOT directories
-        shutil.rmtree(config["xnat_root_dir"], ignore_errors=True)
+        try:
+            shutil.rmtree(config["xnat_root_dir"])
+        except FileNotFoundError:
+            pass
         for dname in config["xnat_mnt_dirs"]:
             dpath = config["xnat_root_dir"] / dname
             dpath.mkdir(parents=True)
@@ -128,6 +148,7 @@ def launch_xnat():
                 time.sleep(config["connection_attempt_sleep"])
         else:
             break
+    logger.info("Connected to %s successfully", xnat_uri)
 
     # Set the path translations to point to the mounted XNAT home directory
     logger.info("Configuing docker server for container service")
@@ -149,11 +170,6 @@ def launch_xnat():
                 "ping": True,
             },
         )
-
-        # Set registry URI, Not working due to limitations in XNAT UI
-        # login.post('/xapi/docker/hubs/1', json={
-        #     "name": "testregistry",
-        #     "url": f"https://host.docker.internal"})
 
     return container
 
@@ -178,6 +194,13 @@ def launch_docker_registry():
             remove=True,
             name=config["docker_registry_container"],
         )
+
+        with connect() as xlogin:
+            # Set registry URI, Not working due to limitations in XNAT UI
+            xlogin.post(
+                "/xapi/docker/hubs",
+                json={"name": "testregistry", "url": "http://host.docker.internal"},
+            )
 
     return container
 
@@ -260,7 +283,59 @@ def stop_cli(loglevel):
 
     set_loggers(loglevel)
 
+    stop_registry()
     stop_xnat()
+
+
+@click.command()
+@click.option(
+    "--loglevel",
+    "-l",
+    type=click.Choice(
+        [
+            "critical",
+            "fatal",
+            "error",
+            "warning",
+            "warn",
+            "info",
+            "debug",
+        ]
+    ),
+    default="info",
+    help="Set the level of logging detail",
+)
+def launch_registry(loglevel):
+
+    set_loggers(loglevel)
+
+    launch_xnat()
+    launch_docker_registry()
+
+
+@click.command()
+@click.option(
+    "--loglevel",
+    "-l",
+    type=click.Choice(
+        [
+            "critical",
+            "fatal",
+            "error",
+            "warning",
+            "warn",
+            "info",
+            "debug",
+        ]
+    ),
+    default="info",
+    help="Set the level of logging detail",
+)
+def stop_registry(loglevel):
+
+    set_loggers(loglevel)
+
+    stop_docker_registry()
 
 
 def set_loggers(loglevel):

@@ -72,3 +72,6 @@ if config_file_path.exists():
     if not config["xnat_root_dir"].parent.exists():
         raise Exception(
             f"Parent of XNAT root directory {str(config['xnat_root_dir'].parent)} does not exist")
+
+
+config["xnat_uri"] = f"http://{config['docker_host']}:{config['xnat_port']}"
