@@ -37,21 +37,32 @@ def launch_xnat():
         config["docker_image"],
         str(config["docker_build_dir"]),
     )
-    shutil.rmtree(config["docker_build_dir"], ignore_errors=True)
-    shutil.copytree(SRC_DIR, config["docker_build_dir"])
     try:
-        image, _ = dc.images.build(
-            path=str(config["docker_build_dir"]),
-            tag=config["docker_image"],
-            buildargs=config["build_args"],
+        shutil.rmtree(config["docker_build_dir"])
+    except PermissionError:
+        logger.warning(
+            (
+                "Could not rebuild %s image as don't have write permissions to '%s' "
+                "directory, skipping"
+            ),
+            config["docker_image"],
+            config["docker_build_dir"],
         )
-    except docker.errors.BuildError as e:
-        build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
-        raise RuntimeError(
-            f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
-            f"failed with the following errors:\n\n{build_log}"
-        )
-    logger.info("Built %s successfully", config["docker_image"])
+    else:
+        shutil.copytree(SRC_DIR, config["docker_build_dir"])
+        try:
+            image, _ = dc.images.build(
+                path=str(config["docker_build_dir"]),
+                tag=config["docker_image"],
+                buildargs=config["build_args"],
+            )
+        except docker.errors.BuildError as e:
+            build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
+            raise RuntimeError(
+                f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
+                f"failed with the following errors:\n\n{build_log}"
+            )
+        logger.info("Built %s successfully", config["docker_image"])
 
     try:
         container = dc.containers.get(config["docker_container"])
@@ -73,8 +84,10 @@ def launch_xnat():
         # Mount in the XNAT root directory for debugging and to allow access
         # from the Docker host when using the container service
         # Clear previous ROOT directories
-        if config["xnat_root_dir"].exists():
+        try:
             shutil.rmtree(config["xnat_root_dir"])
+        except FileNotFoundError:
+            pass
         for dname in config["xnat_mnt_dirs"]:
             dpath = config["xnat_root_dir"] / dname
             dpath.mkdir(parents=True)
