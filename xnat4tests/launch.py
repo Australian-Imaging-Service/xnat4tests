@@ -64,15 +64,15 @@ def launch_xnat():
             )
         logger.info("Built %s successfully", config["docker_image"])
 
+    relaunch = False
     try:
         container = dc.containers.get(config["docker_container"])
     except docker.errors.NotFound:
         relaunch = True
     else:
         if container.image != image:
+            container.stop()
             relaunch = True
-        else:
-            relaunch = False
 
     if relaunch:
         logger.info(
@@ -278,6 +278,56 @@ def stop_cli(loglevel):
     set_loggers(loglevel)
 
     stop_xnat()
+
+
+@click.command()
+@click.option(
+    "--loglevel",
+    "-l",
+    type=click.Choice(
+        [
+            "critical",
+            "fatal",
+            "error",
+            "warning",
+            "warn",
+            "info",
+            "debug",
+        ]
+    ),
+    default="info",
+    help="Set the level of logging detail",
+)
+def launch_registry(loglevel):
+
+    set_loggers(loglevel)
+
+    launch_docker_registry()
+
+
+@click.command()
+@click.option(
+    "--loglevel",
+    "-l",
+    type=click.Choice(
+        [
+            "critical",
+            "fatal",
+            "error",
+            "warning",
+            "warn",
+            "info",
+            "debug",
+        ]
+    ),
+    default="info",
+    help="Set the level of logging detail",
+)
+def stop_registry(loglevel):
+
+    set_loggers(loglevel)
+
+    stop_docker_registry()
 
 
 def set_loggers(loglevel):
