@@ -277,6 +277,7 @@ def stop_cli(loglevel):
 
     set_loggers(loglevel)
 
+    stop_registry()
     stop_xnat()
 
 
@@ -302,6 +303,7 @@ def launch_registry(loglevel):
 
     set_loggers(loglevel)
 
+    launch_xnat()
     launch_docker_registry()
 
 
