@@ -32,11 +32,7 @@ def launch_xnat():
 
     dc = docker.from_env()
 
-    logger.info(
-        "Building %s in '%s' directory",
-        config["docker_image"],
-        str(config["docker_build_dir"]),
-    )
+    rebuild = False
     try:
         shutil.rmtree(config["docker_build_dir"])
     except PermissionError:
@@ -48,7 +44,17 @@ def launch_xnat():
             config["docker_image"],
             config["docker_build_dir"],
         )
+    except FileNotFoundError:
+        rebuild = True
     else:
+        rebuild = True
+
+    if rebuild:
+        logger.info(
+            "Building %s in '%s' directory",
+            config["docker_image"],
+            str(config["docker_build_dir"]),
+        )
         shutil.copytree(SRC_DIR, config["docker_build_dir"])
         try:
             image, _ = dc.images.build(
