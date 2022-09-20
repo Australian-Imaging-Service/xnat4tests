@@ -1,6 +1,7 @@
 import logging
 import click
-from .launch import launch_xnat, launch_docker_registry, stop_xnat, stop_docker_registry
+from .launch import launch_xnat, stop_xnat
+from .registry import launch_docker_registry, stop_docker_registry
 
 logger = logging.getLogger("xnat4tests")
 
