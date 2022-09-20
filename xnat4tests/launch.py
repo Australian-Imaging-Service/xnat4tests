@@ -205,8 +205,8 @@ def launch_docker_registry():
             },
             environment={
                 "REGISTRY_HTTP_ADDR": "0.0.0.0:443",
-                "REGISTRY_HTTP_TLS_CERTIFICATE": "/certs/domain.crt",
-                "REGISTRY_HTTP_TLS_KEY": "/certs/domain.key",
+                "REGISTRY_HTTP_TLS_CERTIFICATE": "/certs/server.crt",
+                "REGISTRY_HTTP_TLS_KEY": "/certs/server.key",
             },
         )
 
@@ -273,7 +273,7 @@ def get_cert_dir():
         )
 
         with open(cert_dir / "csr.conf", 'w') as f:
-            f.write(CSR_CONF)        
+            f.write(CSR_CONF)
 
         openssl.run(
             "openssl req -new -key server.key -out server.csr -config csr.conf"
@@ -293,23 +293,28 @@ def get_cert_dir():
 
 
 CSR_CONF = f"""
-[ req ]
-default_bits = 2048
-prompt = no
-default_md = sha256
+[req]
+default_bits  = 2048
+distinguished_name = req_distinguished_name
 req_extensions = req_ext
-distinguished_name = dn
+x509_extensions = v3_req
+prompt = no
 
-[ dn ]
-C = AU
-ST = NSW
-L = Sydney
-O = xnat4tests
-OU = xnat4tests
-CN = {INTERNAL_DOCKER}
+[req_distinguished_name]
+countryName = XX
+stateOrProvinceName = N/A
+localityName = N/A
+organizationName = Self-signed certificate
+commonName = 120.0.0.1: Self-signed certificate
 
-[ req_ext ]
+[req_ext]
 subjectAltName = @alt_names
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+IP.1 = {INTERNAL_DOCKER}
 
 """
 
