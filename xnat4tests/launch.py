@@ -1,3 +1,4 @@
+import sys
 import stat
 import shutil
 import time
@@ -17,6 +18,11 @@ SRC_DIR = Path(__file__).parent / "docker-src"
 
 xnat_uri = f"http://{config['docker_host']}:{config['xnat_port']}"
 registry_uri = f"{config['docker_host']}"
+
+if sys.platform == "linux":
+    INTERNAL_DOCKER = "172.17.0.1"  # Linux + GH Actions
+else:
+    INTERNAL_DOCKER = "host.docker.internal"  # Mac/Windows local debug
 
 
 def launch_xnat():
@@ -85,7 +91,8 @@ def launch_xnat():
             "Did not find %s container, relaunching", config["docker_container"]
         )
         volumes = {
-            "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}
+            "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"},
+            get_cert_dir(): {"bind": "/certs", "mode": "rw"}
         }
         # Mount in the XNAT root directory for debugging and to allow access
         # from the Docker host when using the container service
@@ -189,17 +196,25 @@ def launch_docker_registry():
         container = dc.containers.run(
             image.tags[0],
             detach=True,
-            ports={"5000/tcp": config["registry_port"]},
+            ports={"5000/tcp": config["registry_port"], "443": "443"},
             network=xnat_docker_network.id,
             remove=True,
             name=config["docker_registry_container"],
+            volumes={
+                get_cert_dir(): {"bind": "/certs", "mode": "ro"}
+            },
+            environment={
+                "REGISTRY_HTTP_ADDR": "0.0.0.0:443",
+                "REGISTRY_HTTP_TLS_CERTIFICATE": "/certs/domain.crt",
+                "REGISTRY_HTTP_TLS_KEY": "/certs/domain.key",
+            },
         )
 
         with connect() as xlogin:
             # Set registry URI, Not working due to limitations in XNAT UI
             xlogin.post(
                 "/xapi/docker/hubs",
-                json={"name": "testregistry", "url": "http://host.docker.internal"},
+                json={"name": "testregistry", "url": f"https://{INTERNAL_DOCKER}"},
             )
 
     return container
@@ -236,114 +251,74 @@ def connect():
     )
 
 
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def launch_cli(loglevel):
+def get_cert_dir():
+    """Self signs OpenSSL certs to be used by docker registry"""
+    cert_dir = config["docker_registry_cert_dir"]
+    if not cert_dir.exists():
+        cert_dir.mkdir()
 
-    set_loggers(loglevel)
+        dc = docker.from_env()
 
-    launch_xnat()
+        openssl = dc.images.pull("alpine/openssl")
 
+        # Here we reuse the XNAT docker container to generate SSL keys (which has
+        # openssl installed in it for this reason)
+        openssl.run(
+            'openssl req -x509 '
+            '-sha256 -days 356 '
+            '-nodes '
+            '-newkey rsa:2048 '
+            f'-subj "/CN={INTERNAL_DOCKER}/C=AU/L=Sydney" '
+            '-keyout rootCA.key -out rootCA.crt'
+        )
 
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def stop_cli(loglevel):
+        with open(cert_dir / "csr.conf", 'w') as f:
+            f.write(CSR_CONF)        
 
-    set_loggers(loglevel)
+        openssl.run(
+            "openssl req -new -key server.key -out server.csr -config csr.conf"
+        )
 
-    stop_registry()
-    stop_xnat()
+        with open(cert_dir / "cert.conf", 'w') as f:
+            f.write(CERT_CONF)
+
+        openssl.run(
+            "openssl x509 -req "
+            "-in server.csr "
+            "-CA rootCA.crt -CAkey rootCA.key "
+            "-CAcreateserial -out server.crt "
+            "-days 365 "
+            "-sha256 -extfile cert.conf"
+        )
 
 
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def launch_registry(loglevel):
+CSR_CONF = f"""
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
 
-    set_loggers(loglevel)
+[ dn ]
+C = AU
+ST = NSW
+L = Sydney
+O = xnat4tests
+OU = xnat4tests
+CN = {INTERNAL_DOCKER}
 
-    launch_xnat()
-    launch_docker_registry()
+[ req_ext ]
+subjectAltName = @alt_names
 
+"""
 
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def stop_registry(loglevel):
+CERT_CONF = """
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @alt_names
 
-    set_loggers(loglevel)
-
-    stop_docker_registry()
-
-
-def set_loggers(loglevel):
-
-    logger.setLevel(loglevel.upper())
-    ch = logging.StreamHandler()
-    ch.setLevel(loglevel.upper())
-    ch.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    )
-    logger.addHandler(ch)
+[alt_names]
+DNS.1 = {INTERNAL_DOCKER}
+"""

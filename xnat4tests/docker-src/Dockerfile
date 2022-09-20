@@ -20,7 +20,7 @@ ARG TOMCAT_XNAT_FOLDER_PATH=${CATALINA_HOME}/webapps/${TOMCAT_XNAT_FOLDER}
 COPY make-xnat-config.sh /usr/local/bin/make-xnat-config.sh
 
 # Install XNAT
-RUN apk add --no-cache postgresql postgresql-client supervisor wget vim docker
+RUN apk add --no-cache postgresql postgresql-client supervisor wget vim docker openssl
 RUN rm -rf ${CATALINA_HOME}/webapps/*
 RUN mkdir -p \
         ${TOMCAT_XNAT_FOLDER_PATH} \

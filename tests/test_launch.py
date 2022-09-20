@@ -101,3 +101,19 @@ def test_launch(login):
         p.name
         for p in (config["xnat_root_dir"] / "archive" / PROJECT / "arc001").iterdir()
     ] == [SESSION]
+
+
+def test_registry_pull_from_xnat(login, docker_registry_uri):
+
+    dc = docker.from_env()
+
+    alpine = dc.mages.pull('alpine:latest')
+    alpine.tag('localhost/test-alpine')
+    alpine.push()
+    alpine.remove()
+
+    xnat = dc.containers.get('xnat4tests')
+
+    listing = xnat.exec("docker images")
+    xnat.exec(f"docker pull {docker_registry_uri}/test-apline")
+    listing_with_test = xnat.exec("docker images")

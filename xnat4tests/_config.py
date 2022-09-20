@@ -13,7 +13,6 @@ XNAT4TESTS_HOME.mkdir(exist_ok=True)
 
 config = {
     "xnat_root_dir": XNAT4TESTS_HOME / "xnat_root",
-    "xnat_mnt_dirs": ["home/logs", "home/work", "build", "archive", "prearchive"],
     "docker_build_dir": XNAT4TESTS_HOME / "build",
     "docker_image": "xnat4tests",
     "docker_container": "xnat4tests",
@@ -21,6 +20,8 @@ config = {
     # This shouldn't be changed as it needs to be the same as the internal for the
     # container service to work
     "xnat_port": "8080",
+    "xnat_mnt_dirs": ["home/logs", "home/work", "build", "archive", "prearchive"],
+    "docker_registry_cert_dir": XNAT4TESTS_HOME / "certs",
     "docker_registry_image": "registry",
     "docker_registry_container": "xnat4tests-docker-registry",
     "docker_network_name": "xnat4tests",
