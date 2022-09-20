@@ -327,3 +327,7 @@ subjectAltName = @alt_names
 [alt_names]
 DNS.1 = {INTERNAL_DOCKER}
 """
+
+
+# SSL certs method derived from https://medium.com/@antelle/how-to-generate-a-self-signed-ssl-certificate-for-an-ip-address-f0dd8dddf754
+# and https://devopscube.com/create-self-signed-certificates-openssl/
