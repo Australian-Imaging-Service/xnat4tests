@@ -76,5 +76,10 @@ a fixture in your ``conftest.py`` with
 Command line interface
 ======================
 
-In addition to the Python API, the test XNAT can be launched and stopped using the ``xnat4tests_launch`` and ``xnat4tests_stop`` commands, respectively
+In addition to the Python API, the test XNAT can be launched and stopped using the ``xnat4tests_launch`` and ``xnat4tests_stop`` commands, respectively.
 
+
+Configuration
+=============
+
+By default the launched XNAT will be accessible at http://localhost:8080. However, the port used and other parameters can be adding a configuration file at `$HOME/.xnat4tests/config.yaml`.
