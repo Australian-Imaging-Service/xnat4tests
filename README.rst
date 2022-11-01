@@ -72,3 +72,9 @@ a fixture in your ``conftest.py`` with
         xnat4tests.launch_xnat()
         yield xnat4tests.connect()
         xnat4tests.stop_xnat()
+        
+Command line interface
+======================
+
+In addition to the Python API, the test XNAT can be launched and stopped using the `xnat4tests_launch` and `xnat4tests_stop` commands, respectively
+
