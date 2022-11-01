@@ -82,4 +82,4 @@ In addition to the Python API, the test XNAT can be launched and stopped using t
 Configuration
 =============
 
-By default the launched XNAT will be accessible at http://localhost:8080. However, the port used and other parameters can be adding a configuration file at `$HOME/.xnat4tests/config.yaml`.
+By default the launched XNAT will be accessible at http://localhost:8080. However, the port used and other parameters can be adding a configuration file at ``$HOME/.xnat4tests/config.yaml``.
