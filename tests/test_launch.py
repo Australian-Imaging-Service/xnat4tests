@@ -18,11 +18,16 @@ def config(home_dir):
     with patch.dict(os.environ, {"XNAT4TESTS_HOME": str(home_dir)}):
         config_path = home_dir / "configs" / "default.yaml"
         config_path.parent.mkdir()
+        plugin_path = home_dir / "plugins" / "default"
+        plugin_path.mkdir(parents=True)
+        with open(plugin_path / "test.txt", "w") as f:
+            f.write("test")
         with open(config_path, "w") as f:
             yaml.dump(
                 {
                     "docker_image": "xnat4tests_unittest",
                     "docker_container": "xnat4tests_unittest",
+                    "xnat_mnt_dirs": [{"src": "plugins/default", "dest": "plugins"}],
                     "xnat_port": "8090",
                     "registry_port": "5555",
                     "xnat_root_dir": str(home_dir / "xnat_root_changed"),
@@ -40,7 +45,7 @@ def config(home_dir):
 @pytest.fixture(scope="session")
 def login(config):
 
-    from xnat4tests import launch_xnat, stop_xnat, connect
+    from xnat4tests import start, stop_xnat, connect
 
     dc = docker.from_env()
     try:
@@ -57,7 +62,7 @@ def login(config):
     else:
         dc.images.remove(image.id)
 
-    launch_xnat()
+    start()
     yield connect()
     stop_xnat()
 
@@ -65,6 +70,7 @@ def login(config):
 def test_config(config, home_dir):
 
     assert config["xnat_root_dir"] == Path(home_dir) / "xnat_root_changed"
+    assert config["xnat_mnt_dirs"] == [{"src": "../plugins/default", "dest": "plugins"}]
     assert config["docker_image"] == "xnat4tests_unittest"
     assert config["docker_container"] == "xnat4tests_unittest"
     assert config["xnat_port"] == "8090"
@@ -109,3 +115,5 @@ def test_launch(config, login):
         p.name
         for p in (config["xnat_root_dir"] / "archive" / PROJECT / "arc001").iterdir()
     ] == [SESSION]
+
+    assert list((config["xnat_root_dir"] / "plugins").iterdir()) == ["test.txt"]

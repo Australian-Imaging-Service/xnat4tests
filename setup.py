@@ -23,10 +23,8 @@ setup(
             'pytest>=5.4.3']},
     entry_points={
         "console_scripts": [
-            "xnat4tests_launch=xnat4tests.launch:launch_cli",
-            "xnat4tests_stop=xnat4tests.launch:stop_cli",
-            "xnat4tests_launch_registry=xnat4tests.launch:launch_registry",
-            "xnat4tests_stop_registry=xnat4tests.launch:stop_registry",
+            "xnat4tests=xnat4tests.launch:cli",
+            "x4t=xnat4tests.launch:cli",
         ]
     },
     include_package_data=True,

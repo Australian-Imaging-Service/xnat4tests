@@ -1,9 +1,21 @@
 import click
-from .launch import launch_xnat, launch_docker_registry, stop_xnat, stop_docker_registry
+from .base import start, start_registry, stop_xnat, stop_registry
 from .utils import set_loggers
 
 
-@click.command()
+@click.group()
+@click.option(
+    "--config",
+    "-c",
+    type=str,
+    default="default",
+    help="The configuration YAML to use to launch the test instance"
+)
+def cli():
+    pass
+
+
+@cli.command()
 @click.option(
     "--loglevel",
     "-l",
@@ -21,14 +33,14 @@ from .utils import set_loggers
     default="info",
     help="Set the level of logging detail",
 )
-def launch_cli(loglevel):
+def start_cli(loglevel):
 
     set_loggers(loglevel)
 
-    launch_xnat()
+    start()
 
 
-@click.command()
+@cli.command()
 @click.option(
     "--loglevel",
     "-l",
@@ -54,8 +66,14 @@ def stop_cli(loglevel):
     stop_xnat()
 
 
-@click.command()
+@cli.group()
+def registry():
+    pass
+
+
+@registry.command()
 @click.option(
+    "start",
     "--loglevel",
     "-l",
     type=click.Choice(
@@ -72,16 +90,17 @@ def stop_cli(loglevel):
     default="info",
     help="Set the level of logging detail",
 )
-def launch_registry(loglevel):
+def start_registry_cli(loglevel):
 
     set_loggers(loglevel)
 
-    launch_xnat()
-    launch_docker_registry()
+    start()
+    start_registry()
 
 
-@click.command()
+@registry.command()
 @click.option(
+    "stop",
     "--loglevel",
     "-l",
     type=click.Choice(
@@ -98,8 +117,8 @@ def launch_registry(loglevel):
     default="info",
     help="Set the level of logging detail",
 )
-def stop_registry(loglevel):
+def stop_registry_cli(loglevel):
 
     set_loggers(loglevel)
 
-    stop_docker_registry()
+    stop_registry()

@@ -17,7 +17,7 @@ mounted in from the host for direct access under ``xnat4tests.load_config()["xna
 which can be useful for debugging and enables the environment in which containers
 run in within XNAT's container service to be mocked.
 
-In addition to the ``launch_xnat`` function, which launches the XNAT instance, a ``connect``
+In addition to the ``start`` function, which launches the XNAT instance, a ``connect``
 function is supplied that returns an XnatPy connection object to the test instance
 
 Installation
@@ -37,11 +37,11 @@ Usage
 .. code-block:: python
 
     # Import xnat4tests functions
-    from xnat4tests import launch_xnat, stop_xnat, connect, config
+    from xnat4tests import start, stop_xnat, connect, config
 
     # Launch the instance (NB: it takes quite while for an XNAT instance to start). If an existing
     # container with the reserved name is already running it is returned instead
-    launch_xnat()
+    start()
 
     # Run your tests
     with connect() as login:
@@ -69,7 +69,7 @@ a fixture in your ``conftest.py`` with
 
     @pytest.fixture(scope='session')
     def xnat_login():
-        xnat4tests.launch_xnat()
+        xnat4tests.start()
         yield xnat4tests.connect()
         xnat4tests.stop_xnat()
         

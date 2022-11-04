@@ -4,7 +4,7 @@ import time
 import requests
 from pathlib import Path
 import docker
-from .utils import logger
+from .utils import logger, XNAT4TESTS_HOME
 import xnat
 from .config import load_config
 
@@ -12,7 +12,7 @@ from .config import load_config
 SRC_DIR = Path(__file__).parent / "docker-src"
 
 
-def launch_xnat(config_name="default"):
+def start(config_name="default"):
     """Starts an XNAT repository within a single Docker container that has
     has the container service plugin configured to access the Docker socket
     to launch sibling containers.
@@ -89,9 +89,16 @@ def launch_xnat(config_name="default"):
             shutil.rmtree(config["xnat_root_dir"])
         except FileNotFoundError:
             pass
-        for dname in config["xnat_mnt_dirs"]:
-            dpath = config["xnat_root_dir"] / dname
-            dpath.mkdir(parents=True)
+        for mnt_dir in config["xnat_mnt_dirs"]:
+            if isinstance(mnt_dir, dict):
+                dname = mnt_dir["dest"]
+                shutil.copytree(XNAT4TESTS_HOME / mnt_dir["src"],
+                                config["xnat_root_dir"] / dname)
+                dpath = config["xnat_root_dir"] / dname
+            else:
+                dname = mnt_dir
+                dpath = config["xnat_root_dir"] / dname
+                dpath.mkdir(parents=True)
             # Set set-group-ID bit so sub-directories (created by root in
             # Docker inherit GID of launching user)
             dpath.chmod(
@@ -170,40 +177,6 @@ def launch_xnat(config_name="default"):
     return container
 
 
-def launch_docker_registry(config_name="default"):
-
-    config = load_config(config_name)
-
-    xnat_docker_network = docker_network()
-    dc = docker.from_env()
-    try:
-        image = dc.images.get(config["docker_registry_image"])
-    except docker.errors.ImageNotFound:
-        logger.info(f"Pulling {config['docker_registry_image']}")
-        image = dc.images.pull(config["docker_registry_image"])
-
-    try:
-        container = dc.containers.get(config["docker_registry_container"])
-    except docker.errors.NotFound:
-        container = dc.containers.run(
-            image.tags[0],
-            detach=True,
-            ports={"5000/tcp": config["registry_port"]},
-            network=xnat_docker_network.id,
-            remove=True,
-            name=config["docker_registry_container"],
-        )
-
-        with connect() as xlogin:
-            # Set registry URI, Not working due to limitations in XNAT UI
-            xlogin.post(
-                "/xapi/docker/hubs",
-                json={"name": "testregistry", "url": "http://host.docker.internal"},
-            )
-
-    return container
-
-
 def stop_xnat(config_name="default"):
 
     config = load_config(config_name)
@@ -216,10 +189,6 @@ def stop_xnat(config_name="default"):
     else:
         logger.info("Stopping test XNAT running at %s", config["docker_container"])
         container.stop()
-
-
-def stop_docker_registry():
-    launch_docker_registry().stop()
 
 
 def docker_network(config_name="default"):
