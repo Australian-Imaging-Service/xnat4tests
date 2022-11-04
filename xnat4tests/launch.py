@@ -150,26 +150,27 @@ def launch_xnat():
             break
     logger.info("Connected to %s successfully", xnat_uri)
 
-    # Set the path translations to point to the mounted XNAT home directory
-    logger.info("Configuing docker server for container service")
-    with login:
-        login.post(
-            "/xapi/docker/server",
-            json={
-                # 'id': 2,
-                "name": "Local socket",
-                "host": "unix:///var/run/docker.sock",
-                "cert-path": "",
-                "swarm-mode": False,
-                "path-translation-xnat-prefix": "/data/xnat",
-                "path-translation-docker-prefix": str(config["xnat_root_dir"]),
-                "pull-images-on-xnat-init": False,
-                "container-user": "",
-                "auto-cleanup": True,
-                "swarm-constraints": [],
-                "ping": True,
-            },
-        )
+    if relaunch:
+        # Set the path translations to point to the mounted XNAT home directory
+        logger.info("Configuing docker server for container service")
+        with login:
+            login.post(
+                "/xapi/docker/server",
+                json={
+                    # 'id': 2,
+                    "name": "Local socket",
+                    "host": "unix:///var/run/docker.sock",
+                    "cert-path": "",
+                    "swarm-mode": False,
+                    "path-translation-xnat-prefix": "/data/xnat",
+                    "path-translation-docker-prefix": str(config["xnat_root_dir"]),
+                    "pull-images-on-xnat-init": False,
+                    "container-user": "",
+                    "auto-cleanup": True,
+                    "swarm-constraints": [],
+                    "ping": True,
+                },
+            )
 
     return container
 
