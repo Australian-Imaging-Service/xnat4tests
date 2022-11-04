@@ -218,7 +218,7 @@ def stop_xnat():
 
 
 def stop_docker_registry():
-    launch_docker_registry().stop(config["docker_registry_container"])
+    launch_docker_registry().stop()
 
 
 def docker_network():
