@@ -1,12 +1,25 @@
 import yaml
 import warnings
+from copy import copy
 from pathlib import Path
 from .utils import XNAT4TESTS_HOME
+
+
+def recursive_update(default, modified):
+    cpy = copy(default)
+    for k, v in modified.items():
+        if isinstance(v, dict):
+            cpy[k] = recursive_update(cpy[k], v)
+        else:
+            cpy[k] = v
+    return cpy
 
 
 def load_config(name="default"):
 
     config_file_path = XNAT4TESTS_HOME / "configs" / f"{name}.yaml"
+
+    config_file_path.parent.mkdir(exist_ok=True)
 
     # Load custom config saved in "config.json" and override defaults
     if not config_file_path.exists():
@@ -15,9 +28,11 @@ def load_config(name="default"):
                 yaml.dump(DEFAULT_CONFIG, f)
         else:
             raise KeyError(f"Could not find configuration file at {config_file_path}")
-    else:
-        with open(config_file_path) as f:
-            config = yaml.load(f, Loader=yaml.Loader)
+
+    with open(config_file_path) as f:
+        config = yaml.load(f, Loader=yaml.Loader)
+
+    config = recursive_update(DEFAULT_CONFIG, config)
 
     if str(config["xnat_port"]) != "8080":
         warnings.warn(

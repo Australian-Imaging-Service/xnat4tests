@@ -10,3 +10,14 @@ except KeyError:
     XNAT4TESTS_HOME = Path.home() / ".xnat4tests"
 
 XNAT4TESTS_HOME.mkdir(exist_ok=True)
+
+
+def set_loggers(loglevel):
+
+    logger.setLevel(loglevel.upper())
+    ch = logging.StreamHandler()
+    ch.setLevel(loglevel.upper())
+    ch.setFormatter(
+        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    )
+    logger.addHandler(ch)

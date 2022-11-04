@@ -7,32 +7,41 @@ import pytest
 import docker
 
 
-tmp_home_dir = tempfile.mkdtemp()
-with patch.dict(os.environ, {"XNAT4TESTS_HOME": tmp_home_dir}):
-    with open(Path(tmp_home_dir) / "config.yaml", "w") as f:
-        yaml.dump(
-            {
-                "docker_image": "xnat4tests_unittest",
-                "docker_container": "xnat4tests_unittest",
-                "xnat_port": "8090",
-                "registry_port": "5555",
-                "xnat_root_dir": os.path.join(tmp_home_dir, "xnat_root_changed"),
-                "build_args": {"JAVA_MX": "1g"},
-            },
-            f,
-        )
-    from xnat4tests import config, launch_xnat, stop_xnat, connect, set_loggers
-
-    set_loggers("debug")
-
-
 @pytest.fixture(scope="session")
 def home_dir():  # Makes the home dir show up on test output
-    return tmp_home_dir
+    return Path(tempfile.mkdtemp())
 
 
 @pytest.fixture(scope="session")
-def login():
+def config(home_dir):
+
+    with patch.dict(os.environ, {"XNAT4TESTS_HOME": str(home_dir)}):
+        config_path = home_dir / "configs" / "default.yaml"
+        config_path.parent.mkdir()
+        with open(config_path, "w") as f:
+            yaml.dump(
+                {
+                    "docker_image": "xnat4tests_unittest",
+                    "docker_container": "xnat4tests_unittest",
+                    "xnat_port": "8090",
+                    "registry_port": "5555",
+                    "xnat_root_dir": str(home_dir / "xnat_root_changed"),
+                    "build_args": {"JAVA_MX": "1g"},
+                },
+                f,
+            )
+        from xnat4tests import load_config, set_loggers
+
+        set_loggers("debug")
+
+        return load_config(name="default")
+
+
+@pytest.fixture(scope="session")
+def login(config):
+
+    from xnat4tests import launch_xnat, stop_xnat, connect
+
     dc = docker.from_env()
     try:
         container = dc.containers.get(config["docker_container"])
@@ -53,10 +62,9 @@ def login():
     stop_xnat()
 
 
-def test_config(login, home_dir):
+def test_config(config, home_dir):
 
     assert config["xnat_root_dir"] == Path(home_dir) / "xnat_root_changed"
-    assert config["xnat_root_dir"].exists()
     assert config["docker_image"] == "xnat4tests_unittest"
     assert config["docker_container"] == "xnat4tests_unittest"
     assert config["xnat_port"] == "8090"
@@ -70,7 +78,7 @@ def test_config(login, home_dir):
     }
 
 
-def test_launch(login):
+def test_launch(config, login):
 
     PROJECT = "MY_TEST_PROJECT"
     SUBJECT = "MY_TEST_SUBJECT"

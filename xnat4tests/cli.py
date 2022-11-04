@@ -1,7 +1,6 @@
-import logging
 import click
 from .launch import launch_xnat, launch_docker_registry, stop_xnat, stop_docker_registry
-from .utils import logger
+from .utils import set_loggers
 
 
 @click.command()
@@ -104,14 +103,3 @@ def stop_registry(loglevel):
     set_loggers(loglevel)
 
     stop_docker_registry()
-
-
-def set_loggers(loglevel):
-
-    logger.setLevel(loglevel.upper())
-    ch = logging.StreamHandler()
-    ch.setLevel(loglevel.upper())
-    ch.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    )
-    logger.addHandler(ch)
