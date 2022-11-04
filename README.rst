@@ -13,7 +13,7 @@ The XNAT container service plugin is installed by default and is configured to u
 the same Docker host as the XNAT instance.
 
 The 'home/logs', 'home/work', 'build', 'archive', 'prearchive' directories are
-mounted in from the host for direct access under ``xnat4tests.config["xnat_root_dir"]``,
+mounted in from the host for direct access under ``xnat4tests.load_config()["xnat_root_dir"]``,
 which can be useful for debugging and enables the environment in which containers
 run in within XNAT's container service to be mocked.
 

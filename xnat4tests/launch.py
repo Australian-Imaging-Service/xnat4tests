@@ -3,32 +3,27 @@ import shutil
 import time
 import requests
 from pathlib import Path
-import logging
 import docker
-import click
+from .utils import logger
 import xnat
-from ._config import config
-
-
-logger = logging.getLogger("xnat4tests")
+from .config import load_config
 
 
 SRC_DIR = Path(__file__).parent / "docker-src"
 
-xnat_uri = f"http://{config['docker_host']}:{config['xnat_port']}"
-registry_uri = f"{config['docker_host']}"
 
-
-def launch_xnat():
+def launch_xnat(config_name="default"):
     """Starts an XNAT repository within a single Docker container that has
     has the container service plugin configured to access the Docker socket
     to launch sibling containers.
 
     The archive, prearchive, build, logs and work directories are mounted from
-    the host machine at `xnat4tests.config["xnat_root"]`
+    the host machine at `xnat4tests.load_config()["xnat_root"]`
     for convenience and to facilitate methods that mock the
     environment containers run in within the XNAT container service.
     """
+
+    config = load_config(config_name)
 
     dc = docker.from_env()
 
@@ -131,7 +126,7 @@ def launch_xnat():
 
     # Need to give time for XNAT to get itself ready after it has
     # started so we try multiple times until giving up trying to connect
-    logger.info("Attempting to connect to %s", xnat_uri)
+    logger.info("Attempting to connect to %s", config["xnat_uri"])
     for attempts in range(1, config["connection_attempts"] + 1):
         try:
             login = connect()
@@ -143,12 +138,12 @@ def launch_xnat():
                     "Attempt %d/%d to connect to %s failed, retrying",
                     attempts,
                     config["connection_attempts"],
-                    xnat_uri,
+                    config["xnat_uri"],
                 )
                 time.sleep(config["connection_attempt_sleep"])
         else:
             break
-    logger.info("Connected to %s successfully", xnat_uri)
+    logger.info("Connected to %s successfully", config["xnat_uri"])
 
     if relaunch:
         # Set the path translations to point to the mounted XNAT home directory
@@ -175,7 +170,10 @@ def launch_xnat():
     return container
 
 
-def launch_docker_registry():
+def launch_docker_registry(config_name="default"):
+
+    config = load_config(config_name)
+
     xnat_docker_network = docker_network()
     dc = docker.from_env()
     try:
@@ -206,7 +204,10 @@ def launch_docker_registry():
     return container
 
 
-def stop_xnat():
+def stop_xnat(config_name="default"):
+
+    config = load_config(config_name)
+
     dc = docker.from_env()
     try:
         container = dc.containers.get(config["docker_container"])
@@ -221,7 +222,10 @@ def stop_docker_registry():
     launch_docker_registry().stop()
 
 
-def docker_network():
+def docker_network(config_name="default"):
+
+    config = load_config(config_name)
+
     dc = docker.from_env()
     try:
         network = dc.networks.get(config["docker_network_name"])
@@ -230,121 +234,11 @@ def docker_network():
     return network
 
 
-def connect():
-    logger.info("Connecting to %s as '%s'", xnat_uri, config["xnat_user"])
+def connect(config_name="default"):
+
+    config = load_config(config_name)
+
+    logger.info("Connecting to %s as '%s'", config["xnat_uri"], config["xnat_user"])
     return xnat.connect(
-        xnat_uri, user=config["xnat_user"], password=config["xnat_password"]
+        config["xnat_uri"], user=config["xnat_user"], password=config["xnat_password"]
     )
-
-
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def launch_cli(loglevel):
-
-    set_loggers(loglevel)
-
-    launch_xnat()
-
-
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def stop_cli(loglevel):
-
-    set_loggers(loglevel)
-
-    stop_registry()
-    stop_xnat()
-
-
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def launch_registry(loglevel):
-
-    set_loggers(loglevel)
-
-    launch_xnat()
-    launch_docker_registry()
-
-
-@click.command()
-@click.option(
-    "--loglevel",
-    "-l",
-    type=click.Choice(
-        [
-            "critical",
-            "fatal",
-            "error",
-            "warning",
-            "warn",
-            "info",
-            "debug",
-        ]
-    ),
-    default="info",
-    help="Set the level of logging detail",
-)
-def stop_registry(loglevel):
-
-    set_loggers(loglevel)
-
-    stop_docker_registry()
-
-
-def set_loggers(loglevel):
-
-    logger.setLevel(loglevel.upper())
-    ch = logging.StreamHandler()
-    ch.setLevel(loglevel.upper())
-    ch.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    )
-    logger.addHandler(ch)
