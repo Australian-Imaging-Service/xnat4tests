@@ -1,92 +1,150 @@
 import yaml
 import warnings
-from copy import copy
 from pathlib import Path
+import typing as ty
+import attrs
 from .utils import XNAT4TESTS_HOME
 
 
-def recursive_update(default, modified):
-    cpy = copy(default)
-    for k, v in modified.items():
-        if isinstance(v, dict):
-            cpy[k] = recursive_update(cpy[k], v)
-        else:
-            cpy[k] = v
-    return cpy
+@attrs.define
+class BuildArgs:
+    xnat_ver: str = "1.8.5"
+    xnat_cs_plugin_ver: str = "3.2.0"
+    xnat_batch_launch_plugin_ver: str = "0.6.0"
+    java_ms: str = "256m"
+    java_mx: str = "2g"
 
 
-def load_config(name="default"):
-
-    config_file_path = XNAT4TESTS_HOME / "configs" / f"{name}.yaml"
-
-    config_file_path.parent.mkdir(exist_ok=True)
-
-    # Load custom config saved in "config.json" and override defaults
-    if not config_file_path.exists():
-        if name == "default":
-            with open(config_file_path, "w") as f:
-                yaml.dump(DEFAULT_CONFIG, f)
-        else:
-            raise KeyError(f"Could not find configuration file at {config_file_path}")
-
-    with open(config_file_path) as f:
-        config = yaml.load(f, Loader=yaml.Loader)
-
-    config = recursive_update(DEFAULT_CONFIG, config)
-
-    if str(config["xnat_port"]) != "8080":
-        warnings.warn(
-            f"Changing XNAT port from 8080 to {config['xnat_port']} will cause "
-            "the container service plugin not to work")
-
-    if str(config["registry_port"]) != "80":
-        warnings.warn(
-            f"Changing XNAT registry port from 80 to {config['registry_port']} is "
-            "currently not compatible with the XNAT container service image pull "
-            "feature")
-
-    config["docker_build_dir"] = Path(config["docker_build_dir"])
-    if not config["docker_build_dir"].parent.exists():
-        raise Exception(
-            f"Parent of build directory {str(config['docker_build_dir'].parent)} "
-            "does not exist")
-
-    config["xnat_root_dir"] = Path(config["xnat_root_dir"])
-    if not config["xnat_root_dir"].parent.exists():
-        raise Exception(
-            f"Parent of XNAT root directory {str(config['xnat_root_dir'].parent)} does not exist")
-
-    # Generate xnat_uri config
-    config["xnat_uri"] = f"http://{config['docker_host']}:{config['xnat_port']}"
-    config["registry_uri"] = f"{config['docker_host']}"
-
-    return config
-
-
-DEFAULT_CONFIG = {
-    "xnat_root_dir": XNAT4TESTS_HOME / "xnat_root",
-    "xnat_mnt_dirs": ["home/logs", "home/work", "build", "archive", "prearchive"],
-    "docker_build_dir": XNAT4TESTS_HOME / "build",
-    "docker_image": "xnat4tests",
-    "docker_container": "xnat4tests",
-    "docker_host": "localhost",
+@attrs.define
+class Config:
+    xnat_root_dir: Path = attrs.field(
+        default=XNAT4TESTS_HOME / "xnat_root" / "default", converter=Path
+    )
+    xnat_mnt_dirs: ty.List[str] = [
+        "home/logs",
+        "home/work",
+        "build",
+        "archive",
+        "prearchive",
+    ]
+    docker_build_dir: Path = attrs.field(
+        default=XNAT4TESTS_HOME / "build", converter=Path
+    )
+    docker_image: str = "xnat4tests"
+    docker_container: str = "xnat4tests"
+    docker_host: str = "localhost"
     # This shouldn't be changed as it needs to be the same as the internal for the
     # container service to work
-    "xnat_port": "8080",
-    "docker_registry_image": "registry",
-    "docker_registry_container": "xnat4tests-docker-registry",
-    "docker_network_name": "xnat4tests",
-    # Must be 80 to avoid bug in XNAT CS config,
-    "registry_port": "80",
-    "xnat_user": "admin",
-    "xnat_password": "admin",
-    "connection_attempts": 20,
-    "connection_attempt_sleep": 5,
-    "build_args": {
-        "XNAT_VER": "1.8.5",
-        "XNAT_CS_PLUGIN_VER": "3.2.0",
-        "XNAT_BATCH_LAUNCH_PLUGIN_VER": "0.6.0",
-        "JAVA_MS": "256m",
-        "JAVA_MX": "2g"
-    }
-}
+    xnat_port: str = attrs.field(default="8080")
+    docker_registry_image: str = "registry"
+    docker_registry_container: str = "xnat4tests-docker-registry"
+    docker_network_name: str = "xnat4tests"
+    # Must be 80 to use as XNAT registry avoid bug in XNAT CS config
+    registry_port: str = "80"
+    # xnat_user: str = "admin"
+    # xnat_password: str = "admin"
+    connection_attempts: int = 20
+    connection_attempt_sleep: int = 5
+    build_args: BuildArgs = attrs.field(
+        factory=dict, converter=lambda d: BuildArgs(**d)
+    )
+
+    @xnat_port.validator
+    def xnat_port_validator(self, _, xnat_port):
+        if xnat_port != "8080":
+            warnings.warn(
+                f"Changing XNAT port from 8080 to {xnat_port} will cause "
+                "the container service plugin not to work"
+            )
+
+    @registry_port.validator
+    def registry_port_validator(self, _, registry_port):
+        if registry_port != "80":
+            warnings.warn(
+                f"Changing XNAT registry port from 80 to {registry_port} is "
+                "currently not compatible with the XNAT container service image pull "
+                "feature"
+            )
+
+    @docker_build_dir.validator
+    def docker_build_dir_validator(self, _, docker_build_dir):
+        if not docker_build_dir.parent.exists():
+            raise Exception(
+                f"Parent of build directory {str(docker_build_dir.parent)} "
+                "does not exist"
+            )
+
+    @xnat_root_dir.validator
+    def xnat_root_dir_validator(self, _, xnat_root_dir):
+        if not xnat_root_dir.parent.exists():
+            raise Exception(
+                f"Parent of XNAT root directory {str(xnat_root_dir.parent)} does not "
+                "exist"
+            )
+
+    @classmethod
+    def load(cls, name):
+        """Loads a configuration object from a YAML file
+
+        Parameters
+        ----------
+        name : str or Path or Config
+            the name or path of the configuration file to load
+
+        Returns
+        -------
+        Config
+            the loaded configuration
+
+        Raises
+        ------
+        Exception
+            if the provided "name" contains a path separator and does not match a path
+            to an existing file
+        KeyError
+            if the provided name does not match an existing file
+        """
+        if isinstance(name, Config):
+            return name  # preloaded configuration
+        elif "/" in name or "\\" in name:  # Treat as file path instead of name
+            config_file_path = Path(name)
+            if not config_file_path.exists():
+                raise Exception(
+                    "Did not find configuration file at explicit path "
+                    f"'{str(config_file_path)}"
+                )
+        else:  # Treat as the filename base of a YAML file in the within xnat4tests HOME
+            config_file_path = XNAT4TESTS_HOME / "configs" / f"{name}.yaml"
+
+            # Create parent dir if it doesn't already exist
+            config_file_path.parent.mkdir(exist_ok=True)
+
+        # Load custom config saved in "config.json" and override defaults
+        if not config_file_path.exists():
+            if name == "default":
+                # Write a default configuration file with all options commented out for ease
+                # of customisation
+                yaml_lines = yaml.dump(Config().asdict()).split("\n")
+                with open(config_file_path, "w") as f:
+                    for line in yaml_lines:
+                        f.write("#" + line + "\n")
+            else:
+                raise KeyError(
+                    f"Could not find configuration file at {config_file_path}"
+                )
+
+        with open(config_file_path) as f:
+            dct = yaml.load(f, Loader=yaml.Loader)
+
+        if dct is None:
+            dct = {}
+
+        return cls(**dct)
+
+    @property
+    def xnat_uri(self):
+        return f"http://{self.docker_host}:{self.xnat_port}"
+
+    @property
+    def registry_uri(self):
+        return self.docker_host

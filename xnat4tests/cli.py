@@ -1,5 +1,6 @@
 import click
-from .base import start, start_registry, stop_xnat, stop_registry
+from .base import start, stop_xnat
+from .registry import start_registry, stop_registry
 from .utils import set_loggers
 
 
@@ -9,13 +10,25 @@ from .utils import set_loggers
     "-c",
     type=str,
     default="default",
-    help="The configuration YAML to use to launch the test instance"
+    help="The configuration YAML to use to launch the test instance",
 )
-def cli():
-    pass
+@click.pass_context
+def cli(ctx, config):
+    ctx.obj = config
 
 
-@cli.command()
+@cli.command(name="start")
+@click.option(
+    "--wipe-mounts/--keep-mounts",
+    "-w/-k",
+    type=bool,
+    help=(
+        "Whether to wipe the externally mounted directories (if present) before "
+        "starting the container. Requred if the 'archive' directory is externally "
+        "mounted otherwise it won't match the Postgres DB, which is recreated for each "
+        "instance of the container"
+    )
+)
 @click.option(
     "--loglevel",
     "-l",
@@ -33,14 +46,15 @@ def cli():
     default="info",
     help="Set the level of logging detail",
 )
-def start_cli(loglevel):
+@click.pass_context
+def start_cli(ctx, loglevel, wipe_mounts):
 
     set_loggers(loglevel)
 
-    start()
+    start(config=ctx.obj)
 
 
-@cli.command()
+@cli.command(name="stop")
 @click.option(
     "--loglevel",
     "-l",
@@ -58,12 +72,13 @@ def start_cli(loglevel):
     default="info",
     help="Set the level of logging detail",
 )
-def stop_cli(loglevel):
+@click.pass_context
+def stop_cli(ctx, loglevel):
 
     set_loggers(loglevel)
 
-    stop_registry()
-    stop_xnat()
+    stop_registry(config=ctx.obj)
+    stop_xnat(config=ctx.obj)
 
 
 @cli.group()
@@ -71,9 +86,8 @@ def registry():
     pass
 
 
-@registry.command()
+@registry.command(name="start")
 @click.option(
-    "start",
     "--loglevel",
     "-l",
     type=click.Choice(
@@ -90,17 +104,17 @@ def registry():
     default="info",
     help="Set the level of logging detail",
 )
-def start_registry_cli(loglevel):
+@click.pass_context
+def start_registry_cli(ctx, loglevel):
 
     set_loggers(loglevel)
 
-    start()
-    start_registry()
+    start(config=ctx.obj)
+    start_registry(config=ctx.obj)
 
 
-@registry.command()
+@registry.command(name="stop")
 @click.option(
-    "stop",
     "--loglevel",
     "-l",
     type=click.Choice(
@@ -117,8 +131,9 @@ def start_registry_cli(loglevel):
     default="info",
     help="Set the level of logging detail",
 )
-def stop_registry_cli(loglevel):
+@click.pass_context
+def stop_registry_cli(ctx, loglevel):
 
     set_loggers(loglevel)
 
-    stop_registry()
+    stop_registry(config=ctx.obj)

@@ -17,14 +17,15 @@ setup(
         'xnat>=0.3.17',
         'click>=8.1.3',
         'requests>=2.10.0',
+        'medimages4tests>=0.3',
         'PyYAML>=6.0'],
     extras_require={
         'test': [
             'pytest>=5.4.3']},
     entry_points={
         "console_scripts": [
-            "xnat4tests=xnat4tests.launch:cli",
-            "x4t=xnat4tests.launch:cli",
+            "xnat4tests=xnat4tests.cli:cli",
+            "x4t=xnat4tests.cli:cli",
         ]
     },
     include_package_data=True,
