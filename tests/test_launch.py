@@ -124,7 +124,7 @@ def test_cli(cli_runner):
 
     result = cli_runner(
         x4t_cli,
-        ["--config", "default", "--help"]
+        ["-c", "plugin-dev", "start", "--keep-mounts", "--dont-rebuild"]
     )
 
     assert result.exit_code == 0, show_cli_trace(result)

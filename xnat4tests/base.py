@@ -13,7 +13,7 @@ from .config import Config
 SRC_DIR = Path(__file__).parent / "docker-src"
 
 
-def start_xnat(config_name="default", wipe_mounts=True):
+def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=False):
     """Starts an XNAT repository within a single Docker container that has
     has the container service plugin configured to access the Docker socket
     to launch sibling containers.
@@ -30,34 +30,23 @@ def start_xnat(config_name="default", wipe_mounts=True):
         With the exception of the "default" configuration, there should be a configuration
         file at $XNAT4TESTS_HOME/config/<config-name>.yaml (where XNAT4TESTS_HOME is
         $HOME/.xnat4tests by default)
-    wipe_mounts : bool
+    keep_mounts : bool
         Whether to wipe out the mount directories before rebooting. Required if mounting
         in the archive directory as otherwise it won't match up with the Postgres DB
         within the container
+    rebuild : bool
+        rebuild the Docker image whether a matching image exists or not
+    relaunch : bool
+        relaunch the container whether a matching container exists or not
     """
 
     config = Config.load(config_name)
 
     dc = docker.from_env()
 
-    rebuild = False
-    try:
-        shutil.rmtree(config.docker_build_dir)
-    except PermissionError:
-        logger.warning(
-            (
-                "Could not rebuild %s image as don't have write permissions to '%s' "
-                "directory, skipping"
-            ),
-            config.docker_image,
-            config.docker_build_dir,
-        )
-    except FileNotFoundError:
-        rebuild = True
-    else:
-        rebuild = True
-
     if rebuild:
+        if config.docker_build_dir.exists():
+            shutil.rmtree(config.docker_build_dir)
         logger.info(
             "Building %s in '%s' directory",
             config.docker_image,
@@ -77,15 +66,23 @@ def start_xnat(config_name="default", wipe_mounts=True):
                 f"failed with the following errors:\n\n{build_log}"
             )
         logger.info("Built %s successfully", config.docker_image)
+    else:
+        try:
+            image = dc.images.get(config.docker_image)
+        except docker.errors.ImageNotFound:
+            rebuild = True
 
-    relaunch = False
     try:
         container = dc.containers.get(config.docker_container)
     except docker.errors.NotFound:
         relaunch = True
     else:
-        if container.image != image:
+        if relaunch or container.image != image:
+            logger.info("Stopping existing %s container", config.docker_container)
             container.stop()
+            while config.docker_container in (c.name for c in dc.containers.list()):
+                logger.info("Waiting for %s container to be autoremoved",
+                            config.docker_container)
             relaunch = True
 
     if relaunch:
@@ -99,7 +96,7 @@ def start_xnat(config_name="default", wipe_mounts=True):
         # from the Docker host when using the container service
 
         # Clear previous ROOT directories
-        if wipe_mounts:
+        if not keep_mounts:
             try:
                 shutil.rmtree(config.xnat_root_dir)
             except FileNotFoundError:
@@ -162,25 +159,26 @@ def start_xnat(config_name="default", wipe_mounts=True):
 
     if relaunch:
         # Set the path translations to point to the mounted XNAT home directory
-        logger.info("Configuing docker server for container service")
         with login:
-            login.post(
-                "/xapi/docker/server",
-                json={
-                    # 'id': 2,
-                    "name": "Local socket",
-                    "host": "unix:///var/run/docker.sock",
-                    "cert-path": "",
-                    "swarm-mode": False,
-                    "path-translation-xnat-prefix": "/data/xnat",
-                    "path-translation-docker-prefix": str(config.xnat_root_dir),
-                    "pull-images-on-xnat-init": False,
-                    "container-user": "",
-                    "auto-cleanup": True,
-                    "swarm-constraints": [],
-                    "ping": True,
-                },
-            )
+            if "containers" in login.get("/xapi/plugins").json():
+                logger.info("Configuing docker server for container service")
+                login.post(
+                    "/xapi/docker/server",
+                    json={
+                        # 'id': 2,
+                        "name": "Local socket",
+                        "host": "unix:///var/run/docker.sock",
+                        "cert-path": "",
+                        "swarm-mode": False,
+                        "path-translation-xnat-prefix": "/data/xnat",
+                        "path-translation-docker-prefix": str(config.xnat_root_dir),
+                        "pull-images-on-xnat-init": False,
+                        "container-user": "",
+                        "auto-cleanup": True,
+                        "swarm-constraints": [],
+                        "ping": True,
+                    },
+                )
 
     return container
 
