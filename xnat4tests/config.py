@@ -40,7 +40,7 @@ class Config:
     docker_registry_container: str = "xnat4tests-docker-registry"
     docker_network_name: str = "xnat4tests"
     # Must be 80 to use as XNAT registry avoid bug in XNAT CS config
-    registry_port: str = "80"
+    registry_port: str = attrs.field(default="80")
     # xnat_user: str = "admin"
     # xnat_password: str = "admin"
     connection_attempts: int = 20
@@ -106,7 +106,7 @@ class Config:
         """
         if isinstance(name, Config):
             return name  # preloaded configuration
-        elif "/" in name or "\\" in name:  # Treat as file path instead of name
+        elif isinstance(name, Path) or "/" in name or "\\" in name:  # Treat as file path instead of name
             config_file_path = Path(name)
             if not config_file_path.exists():
                 raise Exception(

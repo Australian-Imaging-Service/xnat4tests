@@ -1,6 +1,6 @@
 import click
-from .base import start, stop_xnat
-from .registry import start_registry, stop_registry
+from .base import start_xnat, stop_xnat, restart_xnat
+from .registry import start_registry, stop_registry, restart_registry
 from .utils import set_loggers
 
 
@@ -51,7 +51,7 @@ def start_cli(ctx, loglevel, wipe_mounts):
 
     set_loggers(loglevel)
 
-    start(config=ctx.obj)
+    start_xnat(config=ctx.obj)
 
 
 @cli.command(name="stop")
@@ -109,7 +109,7 @@ def start_registry_cli(ctx, loglevel):
 
     set_loggers(loglevel)
 
-    start(config=ctx.obj)
+    start_xnat(config=ctx.obj)  # Ensure XNAT has been started first
     start_registry(config=ctx.obj)
 
 

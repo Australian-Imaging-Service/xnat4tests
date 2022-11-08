@@ -1,11 +1,12 @@
-import os
 import tempfile
 from pathlib import Path
 import traceback
-from unittest.mock import patch
 import yaml
 import pytest
 import docker
+from xnat4tests.utils import set_loggers
+from xnat4tests.config import Config
+from xnat4tests import start_xnat, stop_xnat, connect
 from xnat4tests.cli import cli as x4t_cli
 
 
@@ -21,37 +22,33 @@ def home_dir():  # Makes the home dir show up on test output
 @pytest.fixture(scope="session")
 def config(home_dir):
 
-    with patch.dict(os.environ, {"XNAT4TESTS_HOME": str(home_dir)}):
-        config_path = home_dir / "configs" / "default.yaml"
-        config_path.parent.mkdir()
-        plugin_path = home_dir / "plugins" / "default"
-        plugin_path.mkdir(parents=True)
-        with open(plugin_path / "test.txt", "w") as f:
-            f.write("test")
-        with open(config_path, "w") as f:
-            yaml.dump(
-                {
-                    "docker_image": "xnat4tests_unittest",
-                    "docker_container": "xnat4tests_unittest",
-                    "xnat_mnt_dirs": [{"src": "plugins/default", "dest": "plugins"}],
-                    "xnat_port": "8090",
-                    "registry_port": "5555",
-                    "xnat_root_dir": str(home_dir / "xnat_root_changed"),
-                    "build_args": {"JAVA_MX": "1g"},
-                },
-                f,
-            )
-        from xnat4tests import load_config, set_loggers
+    config_path = home_dir / "configs" / "test-config.yaml"
+    config_path.parent.mkdir()
+    plugin_path = home_dir / "plugins" / "default"
+    plugin_path.mkdir(parents=True)
+    with open(plugin_path / "test.txt", "w") as f:
+        f.write("test")
+    with open(config_path, "w") as f:
+        yaml.dump(
+            {
+                "docker_image": "xnat4tests_unittest",
+                "docker_container": "xnat4tests_unittest",
+                "xnat_mnt_dirs": ["plugins"],
+                "xnat_port": "8090",
+                "registry_port": "5555",
+                "xnat_root_dir": str(home_dir / "xnat_root"),
+                "build_args": {"java_mx": "1g"},
+            },
+            f,
+        )
 
-        set_loggers("debug")
+    set_loggers("debug")
 
-        return load_config(name="default")
+    return Config.load(config_path)
 
 
 @pytest.fixture(scope="session")
 def login(config):
-
-    from xnat4tests import start, stop_xnat, connect
 
     dc = docker.from_env()
     try:
@@ -68,26 +65,24 @@ def login(config):
     else:
         dc.images.remove(image.id)
 
-    start(config)
+    start_xnat(config)
     yield connect(config)
     stop_xnat(config)
 
 
 def test_config(config, home_dir):
 
-    assert config.xnat_root_dir == Path(home_dir) / "xnat_root_changed"
-    assert config.xnat_mnt_dirs == [{"src": "../plugins/default", "dest": "plugins"}]
-    assert config.docker_image == "xnat4tests_unittest"
-    assert config.docker_container == "xnat4tests_unittest"
+    assert config.xnat_root_dir == home_dir / "xnat_root"
+    assert config.xnat_mnt_dirs == ["plugins"]
+    assert config.docker_image == "xnat4tests_test"
+    assert config.docker_container == "xnat4tests_test"
     assert config.xnat_port == "8090"
     assert config.registry_port == "5555"
-    assert config.build_args == {
-        "XNAT_VER": "1.8.5",
-        "XNAT_CS_PLUGIN_VER": "3.2.0",
-        "XNAT_BATCH_LAUNCH_PLUGIN_VER": "0.6.0",
-        "JAVA_MS": "256m",
-        "JAVA_MX": "1g",
-    }
+    assert config.build_args.xnat_ver == "1.8.5"
+    assert config.build_args.xnat_cs_plugin_ver == "3.2.0"
+    assert config.build_args.xnat_batch_launch_plugin_ver == "0.6.0"
+    assert config.build_args.java_ms == "256m"
+    assert config.build_args.java_mx == "1g"
 
 
 def test_launch(config, login):

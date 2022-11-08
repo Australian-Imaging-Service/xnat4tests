@@ -52,6 +52,9 @@ def stop_registry(config_name="default"):
 
 
 def restart_registry(config_name="default"):
+
+    config = Config.load(config_name)
+
     dc = docker.from_env()
     try:
         container = dc.containers.get(config.docker_registry_container)

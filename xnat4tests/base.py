@@ -3,6 +3,7 @@ import shutil
 import time
 import requests
 from pathlib import Path
+import attrs
 import docker
 from .utils import logger
 import xnat
@@ -12,7 +13,7 @@ from .config import Config
 SRC_DIR = Path(__file__).parent / "docker-src"
 
 
-def start(config_name="default", wipe_mounts=True):
+def start_xnat(config_name="default", wipe_mounts=True):
     """Starts an XNAT repository within a single Docker container that has
     has the container service plugin configured to access the Docker socket
     to launch sibling containers.
@@ -67,12 +68,12 @@ def start(config_name="default", wipe_mounts=True):
             image, _ = dc.images.build(
                 path=str(config.docker_build_dir),
                 tag=config.docker_image,
-                buildargs=config.build_args,
+                buildargs={k.upper(): v for k, v in attrs.asdict(config.build_args).items()},
             )
         except docker.errors.BuildError as e:
             build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
             raise RuntimeError(
-                f"Building '{config['docker_image']}' in '{str(config['docker_build_dir'])}' "
+                f"Building '{config.docker_image}' in '{str(config.docker_build_dir)}' "
                 f"failed with the following errors:\n\n{build_log}"
             )
         logger.info("Built %s successfully", config.docker_image)
