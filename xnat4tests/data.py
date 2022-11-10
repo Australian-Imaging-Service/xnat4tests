@@ -49,13 +49,20 @@ def add_data(
     """
     config = Config.load(config_name)
 
+    try:
+        connect(config)
+    except Exception:
+        raise RuntimeError(f"XNAT instance not running at {config.xnat_uri}. "
+                           f"run `xnat4tests --config {config.loaded_from} start` "
+                           f"to launch it")
+
     if dataset == "dummydicom":
 
         to_upload = Path(tempfile.mkdtemp()) / "to_upload"
 
-        t1w_syngo(out_path=to_upload / "t1w")
-        dwi_syngo(out_path=to_upload / "dwi")
-        fmap_syngo(out_path=to_upload / "fmap")
+        t1w_syngo(out_dir=to_upload / "t1w")
+        dwi_syngo(out_dir=to_upload / "dwi")
+        fmap_syngo(out_dir=to_upload / "fmap")
 
         _upload_dicom_data(
             to_upload,
@@ -99,7 +106,7 @@ def _upload_dicom_data(
             "req_format": "qs",
             "xnat:subjectData/label": subject_id,
         }
-        login.put(f"/data/archive/projects/{project_id}/subjects/",
+        login.put(f"/data/archive/projects/{project_id}/subjects/{subject_id}",
                   query=query)
 
         # Import data
