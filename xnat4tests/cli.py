@@ -1,6 +1,7 @@
 import click
 from .base import start_xnat, stop_xnat, restart_xnat
-from .registry import start_registry, stop_registry, restart_registry
+from .data import add_data
+from .registry import start_registry, stop_registry
 from .utils import set_loggers
 from ._version import get_versions
 
@@ -18,7 +19,10 @@ LOGLEVEL_CHOICE = click.Choice(
 )
 
 
-@click.group
+@click.group(
+    help="""Control the launch and configuration of an XNAT instance running inside a
+single Docker container to be used for testing purposes"""
+)
 @click.option(
     "--config",
     "-c",
@@ -32,7 +36,9 @@ def cli(ctx, config):
     ctx.obj = config
 
 
-@cli.command(name="start")
+@cli.command(
+    name="start",
+    help="Starts the test XNAT instance as specified by the configuration file")
 @click.option(
     "--keep-mounts/--wipe-mounts",
     "-k/-w",
@@ -80,7 +86,10 @@ def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch):
     )
 
 
-@cli.command(name="stop")
+@cli.command(
+    name="stop",
+    help="Stops the test XNAT instance named by the configuration file"
+)
 @click.option(
     "--loglevel",
     "-l",
@@ -97,7 +106,10 @@ def stop_cli(ctx, loglevel):
     stop_xnat(config_name=ctx.obj)
 
 
-@cli.command(name="restart")
+@cli.command(
+    name="restart",
+    help="Restarts the test XNAT instance as specified by the configuration file"
+)
 @click.option(
     "--loglevel",
     "-l",
@@ -114,12 +126,38 @@ def restart_cli(ctx, loglevel):
     restart_xnat(config_name=ctx.obj)
 
 
-@cli.group
+@cli.command(
+    name="add-data",
+    help="""Adds sample data to the XNAT instance
+
+DATASET is the name of the dataset to add (out of ['dummydicom'])""")
+@click.argument("dataset", type=str)
+@click.option(
+    "--loglevel",
+    "-l",
+    type=LOGLEVEL_CHOICE,
+    default="info",
+    help="Set the level of logging detail",
+)
+@click.pass_context
+def add_data_cli(ctx, loglevel, dataset):
+
+    set_loggers(loglevel)
+    add_data(dataset, config_name=ctx.obj)
+
+
+@cli.group(
+    help="""Launch/stop a local Docker image registry to test automatic pulling of
+Docker images into XNAT's Container Service"""
+)
 def registry():
     pass
 
 
-@registry.command(name="start")
+@registry.command(
+    name="start",
+    help="""Starts a Docker registry to connect to the XNAT instance as specified
+in the configuration file""")
 @click.option(
     "--loglevel",
     "-l",
@@ -136,7 +174,9 @@ def start_registry_cli(ctx, loglevel):
     start_registry(config_name=ctx.obj)
 
 
-@registry.command(name="stop")
+@registry.command(
+    name="stop",
+    help="Stops the Docker registry specified in the configuration file")
 @click.option(
     "--loglevel",
     "-l",
@@ -150,19 +190,3 @@ def stop_registry_cli(ctx, loglevel):
     set_loggers(loglevel)
 
     stop_registry(config_name=ctx.obj)
-
-
-@registry.command(name="restart")
-@click.option(
-    "--loglevel",
-    "-l",
-    type=LOGLEVEL_CHOICE,
-    default="info",
-    help="Set the level of logging detail",
-)
-@click.pass_context
-def restart_registry_cli(ctx, loglevel):
-
-    set_loggers(loglevel)
-
-    restart_registry(config_name=ctx.obj)

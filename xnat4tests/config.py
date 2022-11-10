@@ -140,7 +140,7 @@ class Config:
         if dct is None:
             dct = {}
 
-        return cls(_loaded_from=config_file_path, **dct)
+        return cls(loaded_from=config_file_path, **dct)
 
     @property
     def xnat_uri(self):

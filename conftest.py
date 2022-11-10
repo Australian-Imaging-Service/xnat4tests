@@ -19,6 +19,11 @@ def work_dir():  # Makes the home dir show up on test output
 
 
 @pytest.fixture(scope="session")
+def home_dir():  # Makes the home dir show up on test output
+    return Path(tempfile.mkdtemp())
+
+
+@pytest.fixture(scope="session")
 def xnat_root_dir(home_dir):
     root_dir = home_dir / "xnat_root"
     root_dir.mkdir()
@@ -26,9 +31,9 @@ def xnat_root_dir(home_dir):
 
 
 @pytest.fixture(scope="session")
-def config(work_dir, xnat_root_dir):
+def config(home_dir, xnat_root_dir):
 
-    config_path = work_dir / "test-config.yaml"
+    config_path = home_dir / "test-config.yaml"
     root_dir = xnat_root_dir / "test-config"
     root_dir.mkdir()
     with open(config_path, "w") as f:

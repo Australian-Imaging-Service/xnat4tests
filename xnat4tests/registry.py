@@ -49,16 +49,3 @@ def stop_registry(config_name="default"):
         logger.info("Did not find registry running at %s", config.docker_registry)
     else:
         container.stop()
-
-
-def restart_registry(config_name="default"):
-
-    config = Config.load(config_name)
-
-    dc = docker.from_env()
-    try:
-        container = dc.containers.get(config.docker_registry_container)
-    except docker.errors.NotFound:
-        pass
-    else:
-        container.stop()

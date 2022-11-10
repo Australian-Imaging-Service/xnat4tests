@@ -13,7 +13,7 @@ def test_xnat_cli(work_dir, xnat_root_dir, cli_runner):
 
     config_path = work_dir / "test-plugins.yaml"
     root_dir = xnat_root_dir / "test-plugins"
-    plugins_dir = root_dir / "home", "plugins"
+    plugins_dir = root_dir / "home" / "plugins"
     plugins_dir.mkdir()
 
     test_path = plugins_dir / "test.txt"
@@ -55,7 +55,7 @@ def test_xnat_cli(work_dir, xnat_root_dir, cli_runner):
         ["-c", str(config_path), "start"]
     )
 
-    assert not test_path.exists()  # Should be 
+    assert not test_path.exists()  # Should be hidden by mounted directory
 
 
 def test_registry_cli(config, cli_runner):

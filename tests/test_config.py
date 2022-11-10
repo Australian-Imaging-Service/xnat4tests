@@ -1,11 +1,15 @@
-
-
 def test_config(config, home_dir):
 
-    assert config.xnat_root_dir == home_dir / "xnat_root"
-    assert config.xnat_mnt_dirs == ["plugins"]
-    assert config.docker_image == "xnat4tests_test"
-    assert config.docker_container == "xnat4tests_test"
+    assert config.xnat_root_dir == home_dir / "xnat_root" / "test-config"
+    assert config.xnat_mnt_dirs == [
+        "home/logs",
+        "home/work",
+        "build",
+        "archive",
+        "prearchive",
+    ]
+    assert config.docker_image == "xnat4tests_unittest"
+    assert config.docker_container == "xnat4tests_unittest"
     assert config.xnat_port == "8090"
     assert config.registry_port == "5555"
     assert config.build_args.xnat_ver == "1.8.5"

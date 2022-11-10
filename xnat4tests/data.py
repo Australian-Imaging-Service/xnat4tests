@@ -35,21 +35,21 @@ def set_cwd(path):
 
 
 def add_data(
-    option: str,
+    dataset: str,
     config_name: str or dict = "default"
 ):
     """Uploads sample test data into the XNAT repository for use in test regimes
 
     Parameters
     ----------
-    option : str
-        name of the option to add. Can be one of: ["dummydicom"]
-    config_name : strordict, optional
+    dataset : str
+        name of the dataset to add. Can be one of: ["dummydicom"]
+    config_name : str or dict, optional
         the configuration that specifies how to connect to the XNAT instance
     """
     config = Config.load(config_name)
 
-    if option == "dummydicom":
+    if dataset == "dummydicom":
 
         to_upload = Path(tempfile.mkdtemp()) / "to_upload"
 
