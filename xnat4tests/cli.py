@@ -2,6 +2,8 @@ import click
 from .base import start_xnat, stop_xnat, restart_xnat
 from .registry import start_registry, stop_registry, restart_registry
 from .utils import set_loggers
+from ._version import get_versions
+
 
 LOGLEVEL_CHOICE = click.Choice(
     [
@@ -24,6 +26,7 @@ LOGLEVEL_CHOICE = click.Choice(
     default="default",
     help="The configuration YAML to use to launch the test instance",
 )
+@click.version_option(get_versions()["version"])
 @click.pass_context
 def cli(ctx, config):
     ctx.obj = config
