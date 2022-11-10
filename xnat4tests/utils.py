@@ -2,6 +2,7 @@ import os
 import logging
 from pathlib import Path
 
+
 logger = logging.getLogger("xnat4tests")
 
 try:

@@ -48,6 +48,7 @@ class Config:
     build_args: BuildArgs = attrs.field(
         factory=dict, converter=lambda d: BuildArgs(**d)
     )
+    loaded_from: Path = None
 
     @xnat_port.validator
     def xnat_port_validator(self, _, xnat_port):
@@ -139,7 +140,7 @@ class Config:
         if dct is None:
             dct = {}
 
-        return cls(**dct)
+        return cls(_loaded_from=config_file_path, **dct)
 
     @property
     def xnat_uri(self):

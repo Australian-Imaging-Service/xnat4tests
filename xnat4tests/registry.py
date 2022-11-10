@@ -13,7 +13,7 @@ def start_registry(config_name="default"):
     try:
         image = dc.images.get(config.docker_registry_image)
     except docker.errors.ImageNotFound:
-        logger.info(f"Pulling {config['docker_registry_image']}")
+        logger.info(f"Pulling {config.docker_registry_image}")
         image = dc.images.pull(config.docker_registry_image)
 
     try:
