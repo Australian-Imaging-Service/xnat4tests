@@ -36,4 +36,3 @@ def test_launch(config, launched_xnat):
             for p in (config.xnat_root_dir / "archive" / PROJECT / "arc001").iterdir()
         ] == [SESSION]
 
-        assert list((config.xnat_root_dir / "plugins").iterdir()) == ["test.txt"]
