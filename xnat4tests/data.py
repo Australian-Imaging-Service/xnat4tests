@@ -110,7 +110,7 @@ def _upload_dicom_data(
                   query=query)
 
         # Import data
-        login.put(
+        login.post(
             "/data/services/import",
             json={
                 "dest": (
