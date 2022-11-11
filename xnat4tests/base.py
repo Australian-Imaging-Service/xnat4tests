@@ -101,7 +101,7 @@ def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=
         # Clear previous ROOT directories
         if not keep_mounts:
             try:
-                shutil.rmtree(config.xnat_root_dir)
+                shutil.rmtree(config.xnat_root_dir, ignore_errors=True)
             except FileNotFoundError:
                 pass
         for dname in config.xnat_mnt_dirs:
