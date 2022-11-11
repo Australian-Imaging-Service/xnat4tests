@@ -121,7 +121,7 @@ a fixture in your ``conftest.py``, e.g.
     from pathlib import Path
     from xnat4tests import start_xnat, stop_xnat, connect, Config
 
-    @pytest.fixture(scop='session')
+    @pytest.fixture(scope='session')
     def xnat_config():
         tmp_dir = Path(tempfile.mkdtemp())
         return Config(
