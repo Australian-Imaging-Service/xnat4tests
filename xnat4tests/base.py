@@ -57,7 +57,9 @@ def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=
             image, _ = dc.images.build(
                 path=str(config.docker_build_dir),
                 tag=config.docker_image,
-                buildargs={k.upper(): v for k, v in attrs.asdict(config.build_args).items()},
+                buildargs={
+                    k.upper(): v for k, v in attrs.asdict(config.build_args).items()
+                },
             )
         except docker.errors.BuildError as e:
             build_log = "\n".join(ln.get("stream", "") for ln in e.build_log)
@@ -81,14 +83,14 @@ def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=
             logger.info("Stopping existing %s container", config.docker_container)
             container.stop()
             while config.docker_container in (c.name for c in dc.containers.list()):
-                logger.info("Waiting for %s container to be autoremoved",
-                            config.docker_container)
+                logger.info(
+                    "Waiting for %s container to be autoremoved",
+                    config.docker_container,
+                )
             relaunch = True
 
     if relaunch:
-        logger.info(
-            "Did not find %s container, relaunching", config.docker_container
-        )
+        logger.info("Did not find %s container, relaunching", config.docker_container)
         volumes = {
             "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}
         }
@@ -240,10 +242,13 @@ def create_session(config_name, project_id, subject_id, session_id):
             "req_format": "qs",
             "xnat:subjectData/label": subject_id,
         }
-        login.put(f"/data/archive/projects/{project_id}/subjects/{subject_id}",
-                  query=query)
+        login.put(
+            f"/data/archive/projects/{project_id}/subjects/{subject_id}", query=query
+        )
 
         # Create subject
-        xsubject = login.classes.SubjectData(label=subject_id, parent=login.projects[project_id])
+        xsubject = login.classes.SubjectData(
+            label=subject_id, parent=login.projects[project_id]
+        )
         # Create session
         login.classes.MrSessionData(label=session_id, parent=xsubject)

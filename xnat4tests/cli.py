@@ -38,7 +38,8 @@ def cli(ctx, config):
 
 @cli.command(
     name="start",
-    help="Starts the test XNAT instance as specified by the configuration file")
+    help="Starts the test XNAT instance as specified by the configuration file",
+)
 @click.option(
     "--keep-mounts/--wipe-mounts",
     "-k/-w",
@@ -87,8 +88,7 @@ def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch):
 
 
 @cli.command(
-    name="stop",
-    help="Stops the test XNAT instance named by the configuration file"
+    name="stop", help="Stops the test XNAT instance named by the configuration file"
 )
 @click.option(
     "--loglevel",
@@ -108,7 +108,7 @@ def stop_cli(ctx, loglevel):
 
 @cli.command(
     name="restart",
-    help="Restarts the test XNAT instance as specified by the configuration file"
+    help="Restarts the test XNAT instance as specified by the configuration file",
 )
 @click.option(
     "--loglevel",
@@ -130,7 +130,8 @@ def restart_cli(ctx, loglevel):
     name="add-data",
     help="""Adds sample data to the XNAT instance
 
-DATASET is the name of the dataset to add (out of ['dummydicom'])""")
+DATASET is the name of the dataset to add (out of ['dummydicom'])""",
+)
 @click.argument("dataset", type=str)
 @click.option(
     "--loglevel",
@@ -157,7 +158,8 @@ def registry():
 @registry.command(
     name="start",
     help="""Starts a Docker registry to connect to the XNAT instance as specified
-in the configuration file""")
+in the configuration file""",
+)
 @click.option(
     "--loglevel",
     "-l",
@@ -175,8 +177,8 @@ def start_registry_cli(ctx, loglevel):
 
 
 @registry.command(
-    name="stop",
-    help="Stops the Docker registry specified in the configuration file")
+    name="stop", help="Stops the Docker registry specified in the configuration file"
+)
 @click.option(
     "--loglevel",
     "-l",

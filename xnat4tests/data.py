@@ -36,10 +36,7 @@ def set_cwd(path):
         os.chdir(pwd)
 
 
-def add_data(
-    dataset: str,
-    config_name: str or dict = "default"
-):
+def add_data(dataset: str, config_name: str or dict = "default"):
     """Uploads sample test data into the XNAT repository for use in test regimes
 
     Parameters
@@ -54,9 +51,11 @@ def add_data(
     try:
         connect(config)
     except Exception:
-        raise RuntimeError(f"XNAT instance not running at {config.xnat_uri}. "
-                           f"run `xnat4tests --config {config.loaded_from} start` "
-                           f"to launch it")
+        raise RuntimeError(
+            f"XNAT instance not running at {config.xnat_uri}. "
+            f"run `xnat4tests --config {config.loaded_from} start` "
+            f"to launch it"
+        )
 
     if dataset == "dummydicom":
 
@@ -93,8 +92,9 @@ def _upload_dicom_data(
             "req_format": "qs",
             "xnat:subjectData/label": subject_id,
         }
-        login.put(f"/data/archive/projects/{project_id}/subjects/{subject_id}",
-                  query=query)
+        login.put(
+            f"/data/archive/projects/{project_id}/subjects/{subject_id}", query=query
+        )
 
         dicoms_dir = work_dir / "dicoms"
         dicoms_dir.mkdir()
@@ -114,7 +114,7 @@ def _upload_dicom_data(
                 for dcm_file in dcm_dir.iterdir():
                     zfile.write(dcm_file.relative_to(dicoms_dir))
 
-        with open(zipped, 'rb') as f:
+        with open(zipped, "rb") as f:
             # Import data
             login.upload(
                 "/data/services/import",

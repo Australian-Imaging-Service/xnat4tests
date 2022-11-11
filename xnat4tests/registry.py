@@ -46,6 +46,8 @@ def stop_registry(config_name="default"):
     try:
         container = dc.containers.get(config.docker_registry_container)
     except docker.errors.NotFound:
-        logger.info("Did not find registry running at %s", config.docker_registry_container)
+        logger.info(
+            "Did not find registry running at %s", config.docker_registry_container
+        )
     else:
         container.stop()

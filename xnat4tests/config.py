@@ -6,6 +6,10 @@ import attrs
 from .utils import XNAT4TESTS_HOME
 
 
+DEFAULT_XNAT_ROOT = XNAT4TESTS_HOME / "xnat_root" / "default"
+DEFAULT_BUILD_DIR = XNAT4TESTS_HOME / "build"
+
+
 @attrs.define
 class BuildArgs:
     xnat_ver: str = "1.8.5"
@@ -17,9 +21,7 @@ class BuildArgs:
 
 @attrs.define
 class Config:
-    xnat_root_dir: Path = attrs.field(
-        default=XNAT4TESTS_HOME / "xnat_root" / "default", converter=Path
-    )
+    xnat_root_dir: Path = attrs.field(default=DEFAULT_XNAT_ROOT, converter=Path)
     xnat_mnt_dirs: ty.List[str] = [
         "home/logs",
         "home/work",
@@ -27,9 +29,7 @@ class Config:
         "archive",
         "prearchive",
     ]
-    docker_build_dir: Path = attrs.field(
-        default=XNAT4TESTS_HOME / "build", converter=Path
-    )
+    docker_build_dir: Path = attrs.field(default=DEFAULT_BUILD_DIR, converter=Path)
     docker_image: str = "xnat4tests"
     docker_container: str = "xnat4tests"
     docker_host: str = "localhost"
@@ -69,7 +69,10 @@ class Config:
 
     @docker_build_dir.validator
     def docker_build_dir_validator(self, _, docker_build_dir):
-        if not docker_build_dir.parent.exists():
+        if (
+            docker_build_dir != DEFAULT_BUILD_DIR
+            and not docker_build_dir.parent.exists()
+        ):
             raise Exception(
                 f"Parent of build directory {str(docker_build_dir.parent)} "
                 "does not exist"
@@ -77,7 +80,7 @@ class Config:
 
     @xnat_root_dir.validator
     def xnat_root_dir_validator(self, _, xnat_root_dir):
-        if not xnat_root_dir.parent.exists():
+        if xnat_root_dir != DEFAULT_XNAT_ROOT and not xnat_root_dir.parent.exists():
             raise Exception(
                 f"Parent of XNAT root directory {str(xnat_root_dir.parent)} does not "
                 "exist"
@@ -107,7 +110,9 @@ class Config:
         """
         if isinstance(name, Config):
             return name  # preloaded configuration
-        elif isinstance(name, Path) or "/" in name or "\\" in name:  # Treat as file path instead of name
+        elif (
+            isinstance(name, Path) or "/" in name or "\\" in name
+        ):  # Treat as file path instead of name
             config_file_path = Path(name)
             if not config_file_path.exists():
                 raise Exception(
