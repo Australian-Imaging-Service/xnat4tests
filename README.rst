@@ -2,6 +2,8 @@ Xnat4Tests
 ==========
 .. image:: https://github.com/australian-imaging-service/xnat4tests/actions/workflows/test.yml/badge.svg
    :target: https://github.com/Australian-Imaging-Service/xnat4tests/actions/workflows/test.yml
+.. image:: https://codecov.io/gh/australian-imaging-service/xnat4tests/branch/main/graph/badge.svg?token=UIS0OGPST7
+   :target: https://codecov.io/gh/australian-imaging-service/xnat4tests
 .. image:: https://img.shields.io/pypi/v/xnat4tests.svg
    :target: https://pypi.python.org/pypi/xnat4tests/
 .. image:: https://img.shields.io/pypi/pyversions/arcana.svg
