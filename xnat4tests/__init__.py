@@ -1,7 +1,8 @@
-from ._config import config
-from .launch import (
-    launch_xnat, launch_docker_registry, stop_xnat, stop_docker_registry,
-    connect, set_loggers)
-
+from .base import start_xnat, stop_xnat, restart_xnat, connect
+from .registry import start_registry, stop_registry
+from .data import add_data
+from .config import Config
 from . import _version
-__version__ = _version.get_versions()['version']
+
+
+__version__ = _version.get_versions()["version"]

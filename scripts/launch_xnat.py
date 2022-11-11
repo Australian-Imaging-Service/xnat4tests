@@ -1,4 +1,4 @@
 #!/usr/bin/env python3
-from xnat4tests.launch import launch_xnat
+from xnat4tests.base import start
 
-launch_xnat()
+start()
