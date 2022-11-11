@@ -6,8 +6,8 @@ Xnat4Tests
    :target: https://codecov.io/gh/australian-imaging-service/xnat4tests
 .. image:: https://img.shields.io/pypi/v/xnat4tests.svg
    :target: https://pypi.python.org/pypi/xnat4tests/
-.. image:: https://img.shields.io/pypi/pyversions/arcana.svg
-   :target: https://pypi.python.org/pypi/arcana/
+.. image:: https://img.shields.io/pypi/pyversions/xnat4tests.svg
+   :target: https://pypi.python.org/pypi/xnat4tests/
    :alt: Supported Python versions
 
 
