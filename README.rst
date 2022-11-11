@@ -4,6 +4,10 @@ Xnat4Tests
    :target: https://github.com/Australian-Imaging-Service/xnat4tests/actions/workflows/test.yml
 .. image:: https://img.shields.io/pypi/v/xnat4tests.svg
    :target: https://pypi.python.org/pypi/xnat4tests/
+.. image:: https://img.shields.io/pypi/pyversions/arcana.svg
+   :target: https://pypi.python.org/pypi/arcana/
+   :alt: Supported Python versions
+
 
 Xnat4Tests provides a helper functions for testing third party tools that access the XNAT
 API or container service, primarily a means to launch a basic XNAT repository instance
@@ -28,7 +32,7 @@ Xnat4Tests is available on PyPI so to install, simply use pip
 .. code-block:: bash
 
     $ pip3 install xnat4tests
-    
+
 or include in your package's ``test_requires`` if you are writing Python tests.
 
 Usage
@@ -40,7 +44,7 @@ Command line interface
 The test XNAT can be launched via the CLI simply by
 
 .. code-block:: bash
-    
+
     $ xnat4tests start
 
 This will spin up an empty XNAT instance that can be accessed using the default admin
@@ -58,7 +62,7 @@ configurations can be used concurrently by saving the config file to a new locat
 passing it to the base command, i.e.
 
 .. code-block:: bash
-    
+
     $ xnat4tests --config /path/to/my/repo/xnat4tests-config.yaml start
 
 To stop or restart the running container you can use `xnat4tests stop` and `xnat4tests`
@@ -89,7 +93,7 @@ afterwards using `stop_xnat`.
         PROJECT = 'MY_TEST_PROJECT'
         SUBJECT = 'MYSUBJECT'
         SESSION = 'MYSESSION'
-    
+
         login.put(f'/data/archive/projects/MY_TEST_PROJECT')
 
         # Create subject
