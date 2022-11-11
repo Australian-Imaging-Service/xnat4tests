@@ -13,7 +13,7 @@ DEFAULT_BUILD_DIR = XNAT4TESTS_HOME / "build"
 @attrs.define
 class BuildArgs:
     xnat_version: str = "1.8.6"
-    xnat_cs_plugin_version: str = "3.2.0"
+    xnat_cs_plugin_version: str = "3.3.0"
     xnat_batch_launch_plugin_version: str = "0.6.0"
     java_ms: str = "256m"
     java_mx: str = "2g"
