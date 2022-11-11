@@ -1,5 +1,7 @@
 import os
+import typing as ty
 import tempfile
+import shutil
 import zipfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -58,14 +60,8 @@ def add_data(
 
     if dataset == "dummydicom":
 
-        to_upload = Path(tempfile.mkdtemp()) / "to_upload"
-
-        t1w_syngo(out_dir=to_upload / "t1w")
-        dwi_syngo(out_dir=to_upload / "dwi")
-        fmap_syngo(out_dir=to_upload / "fmap")
-
         _upload_dicom_data(
-            to_upload,
+            [t1w_syngo(), dwi_syngo(), fmap_syngo()],
             config,
             project_id="dummydicomproject",
             subject_id="dummydicomsubject",
@@ -74,32 +70,23 @@ def add_data(
 
 
 def _upload_dicom_data(
-    to_upload: Path,
+    to_upload: Path or ty.List[Path] or str,
     config: dict,
     project_id: str,
     subject_id: str,
     session_id: str,
 ):
+
+    if isinstance(to_upload, str):
+        to_upload = Path(to_upload)
+    if isinstance(to_upload, Path):
+        to_upload = [to_upload]
+
     work_dir = Path(tempfile.mkdtemp())
 
-    zipped_file = work_dir / "to_upload.zip"
-
-    with zipfile.ZipFile(
-        zipped_file,
-        mode="w",
-        compression=zipfile.ZIP_DEFLATED,
-        allowZip64=True,
-    ) as zfile, set_cwd(to_upload):
-        for dcm_dir in to_upload.iterdir():
-            for dcm_file in dcm_dir.iterdir():
-                zfile.write(dcm_file.relative_to(to_upload))
-
-    # Add project, needs to be in a separate connection as it is only visible when
-    # you log in again
     with connect(config) as login:
-        login.put(f"/data/archive/projects/{project_id}")
 
-    with connect(config) as login, open(zipped_file, 'rb') as f:
+        login.put(f"/data/archive/projects/{project_id}")
         # Create subject
         query = {
             "xsiType": "xnat:subjectData",
@@ -109,16 +96,37 @@ def _upload_dicom_data(
         login.put(f"/data/archive/projects/{project_id}/subjects/{subject_id}",
                   query=query)
 
-        # Import data
-        login.post(
-            "/data/services/import",
-            json={
-                "dest": (
-                    f"/archive/projects/{project_id}/subjects"
-                    f"/{subject_id}/experiments/{session_id}"
-                ),
-                "import-handler": "DICOM-zip",
-                "Direct-Archive": True,
-            },
-            data=f,
-        )
+        dicoms_dir = work_dir / "dicoms"
+        dicoms_dir.mkdir()
+
+        for i, dcm_dir in enumerate(to_upload):
+            shutil.copytree(dcm_dir, dicoms_dir / str(i))
+
+        zipped = work_dir / "dicoms.zip"
+
+        with zipfile.ZipFile(
+            zipped,
+            mode="w",
+            compression=zipfile.ZIP_DEFLATED,
+            allowZip64=True,
+        ) as zfile, set_cwd(dicoms_dir):
+            for dcm_dir in dicoms_dir.iterdir():
+                for dcm_file in dcm_dir.iterdir():
+                    zfile.write(dcm_file.relative_to(dicoms_dir))
+
+        with open(zipped, 'rb') as f:
+            # Import data
+            login.upload(
+                "/data/services/import",
+                query={
+                    "dest": (
+                        f"/archive/projects/{project_id}/subjects"
+                        f"/{subject_id}/experiments/{session_id}"
+                    ),
+                    "Direct-Archive": True,
+                    "overwrite": True,
+                },
+                file_=f,
+                content_type="application/zip",
+                method="post",
+            )

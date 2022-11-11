@@ -35,4 +35,3 @@ def test_launch(config, launched_xnat):
             p.name
             for p in (config.xnat_root_dir / "archive" / PROJECT / "arc001").iterdir()
         ] == [SESSION]
-
