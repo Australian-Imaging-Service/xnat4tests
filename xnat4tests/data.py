@@ -18,6 +18,9 @@ from .base import connect
 from .config import Config
 
 
+AVAILABLE_DATASETS = ["dummydicom"]
+
+
 @contextmanager
 def set_cwd(path):
     """Sets the current working directory to `path` and back to original
@@ -66,9 +69,10 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             subject_id="dummydicomsubject",
             session_id="dummydicomsession",
         )
+
     else:
         raise RuntimeError(
-            f"Unrecognised dataset '{dataset}', can be one of ['dummydicom']"
+            f"Unrecognised dataset '{dataset}', can be one of {AVAILABLE_DATASETS}"
         )
 
 

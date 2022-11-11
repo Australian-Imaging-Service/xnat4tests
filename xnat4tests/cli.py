@@ -1,6 +1,6 @@
 import click
 from .base import start_xnat, stop_xnat, restart_xnat
-from .data import add_data
+from .data import add_data, AVAILABLE_DATASETS
 from .registry import start_registry, stop_registry
 from .utils import set_loggers
 from ._version import get_versions
@@ -41,13 +41,21 @@ def cli(ctx, config):
     help="Starts the test XNAT instance as specified by the configuration file",
 )
 @click.option(
+    "--with-data",
+    "-d",
+    type=click.Choice(AVAILABLE_DATASETS),
+    multiple=True,
+    default=(),
+    help=("Adds sample data into the newly created XNAT instance"),
+)
+@click.option(
     "--keep-mounts/--wipe-mounts",
     "-k/-w",
     type=bool,
     default=False,
     help=(
         "Whether to wipe the externally mounted directories (if present) before "
-        "starting the container. Requred if the 'archive' directory is externally "
+        "starting the container. Required if the 'archive' directory is externally "
         "mounted otherwise it won't match the Postgres DB, which is recreated for each "
         "instance of the container"
     ),
@@ -78,13 +86,16 @@ def cli(ctx, config):
     help="Set the level of logging detail",
 )
 @click.pass_context
-def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch):
+def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch, with_data):
 
     set_loggers(loglevel)
 
     start_xnat(
         config_name=ctx.obj, keep_mounts=keep_mounts, rebuild=rebuild, relaunch=relaunch
     )
+
+    for dataset in with_data:
+        add_data(dataset, config_name=ctx.obj)
 
 
 @cli.command(
@@ -132,7 +143,7 @@ def restart_cli(ctx, loglevel):
 
 DATASET is the name of the dataset to add (out of ['dummydicom'])""",
 )
-@click.argument("dataset", type=str)
+@click.argument("dataset", type=click.Choice(AVAILABLE_DATASETS))
 @click.option(
     "--loglevel",
     "-l",
