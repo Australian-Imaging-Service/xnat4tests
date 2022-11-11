@@ -29,22 +29,63 @@ Xnat4Tests is available on PyPI so to install, simply use pip
 
     $ pip3 install xnat4tests
     
-or include in your package's ``test_requires``.
+or include in your package's ``test_requires`` if you are writing Python tests.
 
 Usage
 -----
 
+Command line interface
+~~~~~~~~~~~~~~~~~~~~~~
+
+The test XNAT can be launched via the CLI simply by
+
+.. code-block:: bash
+    
+    $ xnat4tests start
+
+This will spin up an empty XNAT instance that can be accessed using the default admin
+user account user='admin'/password='admin'. To add some sample data to play with you
+can use the `add-data` command
+
+
+    $ xnat4tests start
+    $ xnat4tests add-data 'dummydicom'
+
+By default, xnat4tests will create a configuration file at `$HOME/.xnat4tests/configs/default.yaml`.
+The config file can be adapted to modify the names of the Docker images/containers used, the ports
+the containers run on, and which directories are mounted into the container. Multiple
+configurations can be used concurrently by saving the config file to a new location and
+passing it to the base command, i.e.
+
+.. code-block:: bash
+    
+    $ xnat4tests --config /path/to/my/repo/xnat4tests-config.yaml start
+
+To stop or restart the running container you can use `xnat4tests stop` and `xnat4tests`
+restart, respectively.
+
+
+Python API
+~~~~~~~~~~
+
+If you are developing Python applications you will typically want to use the API to
+launch the XNAT instance using the `xnat4tests.start_xnat` function. An XnatPy connection
+session object can be accessed using `xnat4tests.connect` and the instanced stopped
+afterwards using `stop_xnat`.
+
 .. code-block:: python
 
     # Import xnat4tests functions
-    from xnat4tests import start, stop_xnat, connect, config
+    from xnat4tests import start_xnat, stop_xnat, connect, Config
+
+    config = Config.load_config("default")
 
     # Launch the instance (NB: it takes quite while for an XNAT instance to start). If an existing
     # container with the reserved name is already running it is returned instead
-    start()
+    start_xnat(config)
 
     # Run your tests
-    with connect() as login:
+    with connect(config) as login:
         PROJECT = 'MY_TEST_PROJECT'
         SUBJECT = 'MYSUBJECT'
         SESSION = 'MYSESSION'
@@ -57,29 +98,32 @@ Usage
         # Create session
         login.classes.MrSessionData(label=SESSION, parent=xsubject)
 
-    assert [p.name for p in (config["xnat_root_dir"] / 'archive').iterdir()] == [PROJECT]
+    assert [p.name for p in (config.xnat_root_dir / "archive").iterdir()] == [PROJECT]
 
     # Remove the container after you are done (not strictly necessary)
-    stop_xnat()
+    stop_xnat(config)
 
 Alternatively, if you are using Pytest then you can set up the connection as
-a fixture in your ``conftest.py`` with
+a fixture in your ``conftest.py``, e.g.
 
 .. code-block:: python
 
+    import tempfile
+    from pathlib import Path
+    from xnat4tests import start_xnat, stop_xnat, connect, Config
+
+    @pytest.fixture(scop='session')
+    def xnat_config():
+        tmp_dir = Path(tempfile.mkdtemp())
+        return Config(
+            xnat_root_dir=tmp_dir,
+            xnat_port=9999,
+            docker_container="myrepo_xnat4tests",
+        )
+
     @pytest.fixture(scope='session')
-    def xnat_login():
-        xnat4tests.start()
-        yield xnat4tests.connect()
-        xnat4tests.stop_xnat()
-        
-Command line interface
-======================
-
-In addition to the Python API, the test XNAT can be launched and stopped using the ``xnat4tests_launch`` and ``xnat4tests_stop`` commands, respectively.
-
-
-Configuration
-=============
-
-By default the launched XNAT will be accessible at http://localhost:8080. However, the port used and other parameters can be adding a configuration file at ``$HOME/.xnat4tests/config.yaml``.
+    def xnat_login(xnat_config):
+        xnat4tests.start_xnat(xnat_config)
+        xnat4tets.add_data("dummydicom")
+        yield xnat4tests.connect(xnat_config)
+        xnat4tests.stop_xnat(xnat_config)
