@@ -130,7 +130,7 @@ class Config:
             if name == "default":
                 # Write a default configuration file with all options commented out for ease
                 # of customisation
-                yaml_lines = yaml.dump(Config().asdict()).split("\n")
+                yaml_lines = yaml.dump(attrs.asdict(Config()).split("\n"))
                 with open(config_file_path, "w") as f:
                     for line in yaml_lines:
                         f.write("#" + line + "\n")
