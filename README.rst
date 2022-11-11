@@ -29,7 +29,10 @@ function is supplied that returns an XnatPy connection object to the test instan
 Installation
 ------------
 
-Xnat4Tests is available on PyPI so to install, simply use pip
+Docker needs to be installed on your system, see [Get Docker](https://docs.docker.com/get-docker/)
+for details.
+
+Xnat4Tests is available on PyPI so can be installed with
 
 .. code-block:: bash
 
@@ -43,7 +46,7 @@ Usage
 Command line interface
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The test XNAT can be launched via the CLI simply by
+The test XNAT can be launched via the CLI by
 
 .. code-block:: bash
 
