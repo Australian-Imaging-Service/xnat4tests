@@ -29,7 +29,7 @@ function is supplied that returns an XnatPy connection object to the test instan
 Installation
 ------------
 
-Docker needs to be installed on your system, see [Get Docker](https://docs.docker.com/get-docker/)
+Docker needs to be installed on your system, see `Get Docker <https://docs.docker.com/get-docker/>`_
 for details.
 
 Xnat4Tests is available on PyPI so can be installed with
