@@ -2,6 +2,9 @@ import versioneer
 from setuptools import setup, find_packages
 
 
+PYTHON_VERSIONS = ['3.7', '3.8', '3.9', '3.10']
+
+
 setup(
     name='xnat4tests',
     version=versioneer.get_version(),
@@ -39,5 +42,5 @@ setup(
          "Topic :: Scientific/Engineering :: Bio-Informatics",
          "Topic :: Scientific/Engineering :: Medical Science Apps."]
         + ["Programming Language :: Python :: " + str(v)
-           for v in ('3.5', '3.6', '3.7', '3.8', '3.9')]),
+           for v in PYTHON_VERSIONS]),
     keywords='repository analysis neuroimaging workflows pipelines')
