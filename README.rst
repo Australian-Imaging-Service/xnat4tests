@@ -131,8 +131,8 @@ a fixture in your ``conftest.py``, e.g.
         )
 
     @pytest.fixture(scope='session')
-    def xnat_login(xnat_config):
+    def xnat_uri(xnat_config):
         xnat4tests.start_xnat(xnat_config)
         xnat4tets.add_data("dummydicom")
-        yield xnat4tests.connect(xnat_config)
+        yield xnat_config.xnat_uri
         xnat4tests.stop_xnat(xnat_config)
