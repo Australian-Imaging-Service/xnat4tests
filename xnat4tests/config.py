@@ -118,7 +118,7 @@ class Config:
             config_file_path = XNAT4TESTS_HOME / "configs" / f"{name}.yaml"
 
             # Create parent dir if it doesn't already exist
-            config_file_path.parent.mkdir(exist_ok=True)
+            config_file_path.parent.mkdir(exist_ok=True, parents=True)
 
         # Load custom config saved in "config.json" and override defaults
         if not config_file_path.exists():

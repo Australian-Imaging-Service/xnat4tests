@@ -99,7 +99,7 @@ def _upload_dicom_data(
     with connect(config) as login:
         login.put(f"/data/archive/projects/{project_id}")
 
-    with connect(config) as login, open(zipped_file) as f:
+    with connect(config) as login, open(zipped_file, 'rb') as f:
         # Create subject
         query = {
             "xsiType": "xnat:subjectData",
@@ -111,7 +111,7 @@ def _upload_dicom_data(
 
         # Import data
         login.put(
-            "/data/service/import",
+            "/data/services/import",
             json={
                 "dest": (
                     f"/archive/projects/{project_id}/subjects"

@@ -227,3 +227,23 @@ def connect(config_name="default"):
 
     logger.info("Connecting to %s as '%s'", config.xnat_uri, "admin")
     return xnat.connect(config.xnat_uri, user="admin", password="admin")
+
+
+def create_session(config_name, project_id, subject_id, session_id):
+
+    with connect(config_name) as login:
+
+        login.put(f"/data/archive/projects/{project_id}")
+        # Create subject
+        query = {
+            "xsiType": "xnat:subjectData",
+            "req_format": "qs",
+            "xnat:subjectData/label": subject_id,
+        }
+        login.put(f"/data/archive/projects/{project_id}/subjects/{subject_id}",
+                  query=query)
+
+        # Create subject
+        xsubject = login.classes.SubjectData(label=subject_id, parent=login.projects[project_id])
+        # Create session
+        login.classes.MrSessionData(label=session_id, parent=xsubject)
