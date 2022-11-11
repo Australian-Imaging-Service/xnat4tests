@@ -47,7 +47,7 @@ def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=
     if rebuild:
         config.docker_build_dir.parent.mkdir(exist_ok=True, parents=True)
         if config.docker_build_dir.exists():
-            shutil.rmtree(config.docker_build_dir)
+            shutil.rmtree(config.docker_build_dir, ignore_errors=True)
         logger.info(
             "Building %s in '%s' directory",
             config.docker_image,
