@@ -45,6 +45,7 @@ def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=
     dc = docker.from_env()
 
     if rebuild:
+        config.docker_build_dir.parent.mkdir(exist_ok=True, parents=True)
         if config.docker_build_dir.exists():
             shutil.rmtree(config.docker_build_dir)
         logger.info(

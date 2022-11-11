@@ -66,6 +66,10 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             subject_id="dummydicomsubject",
             session_id="dummydicomsession",
         )
+    else:
+        raise RuntimeError(
+            f"Unrecognised dataset '{dataset}', can be one of ['dummydicom']"
+        )
 
 
 def _upload_dicom_data(
