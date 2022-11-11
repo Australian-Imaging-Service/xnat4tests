@@ -121,7 +121,7 @@ a fixture in your ``conftest.py``, e.g.
     from pathlib import Path
     from xnat4tests import start_xnat, stop_xnat, connect, Config
 
-    @pytest.fixture(scope='session')
+    @pytest.fixture(scope="session")
     def xnat_config():
         tmp_dir = Path(tempfile.mkdtemp())
         return Config(
@@ -130,7 +130,7 @@ a fixture in your ``conftest.py``, e.g.
             docker_container="myrepo_xnat4tests",
         )
 
-    @pytest.fixture(scope='session')
+    @pytest.fixture(scope="session")
     def xnat_uri(xnat_config):
         xnat4tests.start_xnat(xnat_config)
         xnat4tets.add_data("dummydicom")
