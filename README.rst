@@ -127,7 +127,9 @@ a fixture in your ``conftest.py``, e.g.
         return Config(
             xnat_root_dir=tmp_dir,
             xnat_port=9999,
+            docker_image="myrepo_xnat4tests",
             docker_container="myrepo_xnat4tests",
+            build_args={"xnat_ver": "1.8.5"},
         )
 
     @pytest.fixture(scope="session")
