@@ -11,20 +11,21 @@ Xnat4Tests
    :alt: Supported Python versions
 
 
-Xnat4Tests provides a helper functions for testing third party tools that access the XNAT
-API or container service, primarily a means to launch a basic XNAT repository instance
-within a single Docker container.
+Xnat4Tests runs a basic XNAT repository instance in a single Docker to be
+used for quick demonstrations on your workstation or integrated within test suites for
+tools that use XNAT's REST API. 
 
 The XNAT container service plugin is installed by default and is configured to use
 the same Docker host as the XNAT instance.
 
 The ``home/logs``, ``home/work``, ``build``, ``archive``, ``prearchive`` directories are
-mounted in from the host under ``$HOME/.xnat4tests/xnat_root/default``
-by default, which can be useful for debugging and enables the environment in which
-containers run in within XNAT's container service to be mocked.
+mounted in from the host system from the ``$HOME/.xnat4tests/xnat_root/default`` directory
+by default. This can be useful for debugging and can be used to replicate the environment
+under which containers run in within XNAT's container service.
 
-In addition to the ``start`` function, which launches the XNAT instance, a ``connect``
-function is supplied that returns an XnatPy connection object to the test instance
+In addition to the ``start_xnat``, ``stop_xnat`` and ``restart_xnat`` functions, which control the life-cycle of
+the XNAT instance, there is also a ``connect`` function that returns an XnatPy connection object to the test instance
+
 
 Installation
 ------------
@@ -46,7 +47,7 @@ Usage
 Command line interface
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The test XNAT can be launched via the CLI by
+A test XNAT instance can be launched using the CLI with
 
 .. code-block:: bash
 
