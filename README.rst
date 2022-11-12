@@ -116,7 +116,10 @@ afterwards using `stop_xnat`.
 
     assert [p.name for p in (config.xnat_root_dir / "archive").iterdir()] == [PROJECT]
 
-    # Remove the container after you are done (not strictly necessary)
+    # Remove the container after you are done (not strictly necessary). To avoid
+    # having to wait for XNAT to restart each time before you run your tests, you can
+    # skip this line and start_xnat will attempt to use the instance that is already
+    # running
     stop_xnat(config)
 
 Alternatively, if you are using Pytest then you can set up the connection as
