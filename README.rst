@@ -94,7 +94,7 @@ afterwards using `stop_xnat`.
     # Import xnat4tests functions
     from xnat4tests import start_xnat, stop_xnat, connect, Config
 
-    config = Config.load_config("default")
+    config = Config.load("default")
 
     # Launch the instance (NB: it takes quite while for an XNAT instance to start). If an existing
     # container with the reserved name is already running it is returned instead
