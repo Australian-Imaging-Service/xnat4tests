@@ -136,7 +136,10 @@ a fixture in your ``conftest.py``, e.g.
             xnat_port=9999,
             docker_image="myrepo_xnat4tests",
             docker_container="myrepo_xnat4tests",
-            build_args={"xnat_version": "1.8.5"},
+            build_args={
+                "xnat_version": "1.8.5",
+                "xnat_cs_plugin_version": "3.2.0",
+            },
         )
 
     @pytest.fixture(scope="session")
