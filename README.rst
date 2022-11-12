@@ -61,6 +61,12 @@ can use the `add-data` command
     $ xnat4tests start
     $ xnat4tests add-data 'dummydicom'
 
+or in a single line
+
+.. code-block:: bash
+
+    $ xnat4tests start --with-data 'dummydicom'
+
 By default, xnat4tests will create a configuration file at `$HOME/.xnat4tests/configs/default.yaml`.
 The config file can be adapted to modify the names of the Docker images/containers used, the ports
 the containers run on, and which directories are mounted into the container. Multiple
