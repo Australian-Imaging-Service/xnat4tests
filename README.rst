@@ -100,7 +100,7 @@ afterwards using `stop_xnat`.
     # container with the reserved name is already running it is returned instead
     start_xnat(config)
 
-    # Run your tests
+    # Connect to the XNAT instance using XnatPy and run some tests
     with connect(config) as login:
         PROJECT = 'MY_TEST_PROJECT'
         SUBJECT = 'MYSUBJECT'
