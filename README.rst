@@ -77,8 +77,8 @@ passing it to the base command, i.e.
 
     $ xnat4tests --config /path/to/my/repo/xnat4tests-config.yaml start
 
-To stop or restart the running container you can use `xnat4tests stop` and `xnat4tests`
-restart, respectively.
+To stop or restart the running container you can use ``xnat4tests stop`` and ``xnat4tests
+restart`` commands, respectively.
 
 
 Python API
