@@ -56,6 +56,7 @@ This will spin up an empty XNAT instance that can be accessed using the default 
 user account user='admin'/password='admin'. To add some sample data to play with you
 can use the `add-data` command
 
+.. code-block:: bash
 
     $ xnat4tests start
     $ xnat4tests add-data 'dummydicom'
