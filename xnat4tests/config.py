@@ -50,6 +50,8 @@ class Config:
     )
     loaded_from: Path = None
 
+    # These are fixed at the defaults for now. In future we might want to
+    # have these set in the configuration
     xnat_user = "admin"
     xnat_password = "admin"
 
