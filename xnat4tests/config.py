@@ -49,8 +49,9 @@ class Config:
         factory=dict, converter=lambda d: BuildArgs(**d)
     )
     loaded_from: Path = None
-    xnat_user: str = "admin"
-    xnat_password: str = "admin"
+
+    xnat_user = "admin"
+    xnat_password = "admin"
 
     @xnat_port.validator
     def xnat_port_validator(self, _, xnat_port):
