@@ -50,6 +50,11 @@ class Config:
     )
     loaded_from: Path = None
 
+    # These are fixed at the defaults for now. In future we might want to
+    # have these set in the configuration
+    xnat_user = "admin"
+    xnat_password = "admin"
+
     @xnat_port.validator
     def xnat_port_validator(self, _, xnat_port):
         if xnat_port != "8080":
