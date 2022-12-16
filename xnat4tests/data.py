@@ -5,6 +5,7 @@ import shutil
 import zipfile
 from contextlib import contextmanager
 from pathlib import Path
+from xnat.exceptions import XNATResponseError
 from medimages4tests.dummy.dicom.mri.t1w.siemens.skyra.syngo_d13c import (
     get_image as t1w_syngo,
 )
@@ -16,6 +17,7 @@ from medimages4tests.dummy.dicom.mri.fmap.siemens.skyra.syngo_d13c import (
 )
 from .base import connect
 from .config import Config
+from .utils import logger
 
 
 AVAILABLE_DATASETS = ["dummydicom"]
@@ -93,16 +95,28 @@ def _upload_dicom_data(
 
     with connect(config) as login:
 
-        login.put(f"/data/archive/projects/{project_id}")
+        project_uri = f"/data/archive/projects/{project_id}"
+
+        try:
+            login.get(project_uri)
+        except XNATResponseError:
+            pass
+        else:
+            logger.warning(
+                "%s project already exists in test XNAT, skipping add data step",
+                project_id,
+            )
+            return
+
+        login.put(project_uri)
+
         # Create subject
         query = {
             "xsiType": "xnat:subjectData",
             "req_format": "qs",
             "xnat:subjectData/label": subject_id,
         }
-        login.put(
-            f"/data/archive/projects/{project_id}/subjects/{subject_id}", query=query
-        )
+        login.put(f"{project_uri}/subjects/{subject_id}", query=query)
 
         dicoms_dir = work_dir / "dicoms"
         dicoms_dir.mkdir()
