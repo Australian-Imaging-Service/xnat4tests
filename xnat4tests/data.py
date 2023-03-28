@@ -152,3 +152,13 @@ def _upload_dicom_data(
                 content_type="application/zip",
                 method="post",
             )
+        # Pull headers and create OHIF headers
+        # login.put(
+        #     f"/data/experiments/{session_id}?pullDataFromHeaders=true"
+        # )
+        # login.put(
+        #     f"/data/experiments/{session_id}?fixScanTypes=true"
+        # )
+        # login.put(
+        #     f"/data/experiments/{session_id}?triggerPipelines=true"
+        # )
