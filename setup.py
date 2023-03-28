@@ -17,7 +17,7 @@ setup(
     long_description=open("README.rst").read(),
     install_requires=[
         "docker>=5.0.2",
-        "xnat>=0.3.17",
+        "xnat==0.4.3",
         "click>=7.1.2",
         "requests>=2.10.0",
         "medimages4tests>=0.3",
