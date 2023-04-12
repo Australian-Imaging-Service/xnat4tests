@@ -229,6 +229,6 @@ def _upload_dicom_data(
             )
         experiment_id = login.projects[project_id].experiments[session_id].id
         # Pull headers and create OHIF headers
-        login.put(f"/data/experiments/{experiment_id}?pullDataFromHeaders=true")
-        login.put(f"/data/experiments/{experiment_id}?fixScanTypes=true")
+        # login.put(f"/data/experiments/{experiment_id}?pullDataFromHeaders=true")
+        # login.put(f"/data/experiments/{experiment_id}?fixScanTypes=true")
         login.put(f"/data/experiments/{experiment_id}?triggerPipelines=true")
