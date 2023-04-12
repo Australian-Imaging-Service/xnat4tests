@@ -20,7 +20,7 @@ from .config import Config
 from .utils import logger
 
 
-AVAILABLE_DATASETS = ["dummydicom"]
+AVAILABLE_DATASETS = ["dummydicom", "user-training"]
 
 
 @contextmanager
@@ -72,6 +72,72 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             session_id="dummydicomsession",
         )
 
+    elif dataset == "user-training":
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="CONT01",
+            session_id="CONT01_MR01",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="CONT02",
+            session_id="CONT02_MR01",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="CONT01",
+            session_id="CONT01_MR02",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="CONT02",
+            session_id="CONT02_MR02",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="TEST01",
+            session_id="TEST01_MR01",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="TEST01",
+            session_id="TEST01_MR02",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="TEST02",
+            session_id="TEST02_MR01",
+        )
+
+        _upload_dicom_data(
+            [t1w_syngo(), fmap_syngo()],
+            config,
+            project_id="TRAINING",
+            subject_id="TEST02",
+            session_id="TEST02_MR02",
+        )
+
     else:
         raise RuntimeError(
             f"Unrecognised dataset '{dataset}', can be one of {AVAILABLE_DATASETS}"
@@ -100,15 +166,12 @@ def _upload_dicom_data(
         try:
             login.get(project_uri)
         except XNATResponseError:
-            pass
+            login.put(project_uri)
         else:
-            logger.warning(
-                "%s project already exists in test XNAT, skipping add data step",
+            logger.debug(
+                "'%s' project already exists in test XNAT, skipping add data project",
                 project_id,
             )
-            return
-
-        login.put(project_uri)
 
         # Create subject
         query = {
@@ -117,6 +180,18 @@ def _upload_dicom_data(
             "xnat:subjectData/label": subject_id,
         }
         login.put(f"{project_uri}/subjects/{subject_id}", query=query)
+
+        try:
+            login.get(f"{project_uri}/subjects/{subject_id}/experiments/{session_id}")
+        except XNATResponseError:
+            pass
+        else:
+            logger.info(
+                "'%s' session in '%s' project already exists in test XNAT, skipping",
+                session_id,
+                project_id,
+            )
+            return
 
         dicoms_dir = work_dir / "dicoms"
         dicoms_dir.mkdir()
@@ -152,13 +227,8 @@ def _upload_dicom_data(
                 content_type="application/zip",
                 method="post",
             )
+        experiment_id = login.projects[project_id].experiments[session_id].id
         # Pull headers and create OHIF headers
-        # login.put(
-        #     f"/data/experiments/{session_id}?pullDataFromHeaders=true"
-        # )
-        # login.put(
-        #     f"/data/experiments/{session_id}?fixScanTypes=true"
-        # )
-        # login.put(
-        #     f"/data/experiments/{session_id}?triggerPipelines=true"
-        # )
+        login.put(f"/data/experiments/{experiment_id}?pullDataFromHeaders=true")
+        login.put(f"/data/experiments/{experiment_id}?fixScanTypes=true")
+        login.put(f"/data/experiments/{experiment_id}?triggerPipelines=true")
