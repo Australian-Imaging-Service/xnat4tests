@@ -5,7 +5,7 @@ __pycache__
 .DS_Store
 .coverage
 .settings/
-*.swp 
+*.swp
 /build/
 /dist/
 .pytest_cache
@@ -13,4 +13,4 @@ __pycache__
 .env
 .vscode
 *.egg-info
-/.venv
+*.venv
