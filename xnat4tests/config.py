@@ -48,7 +48,7 @@ class Config:
     build_args: BuildArgs = attrs.field(
         factory=dict, converter=lambda d: BuildArgs(**d)
     )
-    loaded_from: Path = None
+    loaded_from: ty.Optional[Path] = None
 
     # These are fixed at the defaults for now. In future we might want to
     # have these set in the configuration

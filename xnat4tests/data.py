@@ -15,12 +15,13 @@ from medimages4tests.dummy.dicom.mri.dwi.siemens.skyra.syngo_d13c import (
 from medimages4tests.dummy.dicom.mri.fmap.siemens.skyra.syngo_d13c import (
     get_image as fmap_syngo,
 )
+from medimages4tests.mri.neuro.t1w import get_image as openneuro_t1w
 from .base import connect
 from .config import Config
 from .utils import logger
 
 
-AVAILABLE_DATASETS = ["dummydicom", "user-training"]
+AVAILABLE_DATASETS = ["dummydicom", "user-training", "openneuro-t1w"]
 
 
 @contextmanager
@@ -70,6 +71,23 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="dummydicomproject",
             subject_id="dummydicomsubject",
             session_id="dummydicomsession",
+        )
+
+    elif dataset == "openneuro-t1w":
+
+        _upload_directly(
+            {"t1w": openneuro_t1w()},
+            config,
+            project_id="OPENNEURO_T1W",
+            subject_id="subject01",
+            session_id="subject01_MR01",
+        )
+        _upload_directly(
+            {"t1w": openneuro_t1w()},
+            config,
+            project_id="OPENNEURO_T1W",
+            subject_id="subject02",
+            session_id="subject02_MR01",
         )
 
     elif dataset == "user-training":
@@ -232,3 +250,58 @@ def _upload_dicom_data(
         # login.put(f"/data/experiments/{experiment_id}?pullDataFromHeaders=true")
         # login.put(f"/data/experiments/{experiment_id}?fixScanTypes=true")
         login.put(f"/data/experiments/{experiment_id}?triggerPipelines=true")
+
+
+def _upload_directly(
+    to_upload: ty.Dict[str, Path],
+    config: dict,
+    project_id: str,
+    subject_id: str,
+    session_id: str,
+):
+
+    with connect(config) as login:
+
+        project_uri = f"/data/archive/projects/{project_id}"
+
+        try:
+            login.get(project_uri)
+        except XNATResponseError:
+            login.put(project_uri)
+        else:
+            logger.debug(
+                "'%s' project already exists in test XNAT, skipping add data project",
+                project_id,
+            )
+
+        # Create subject
+        query = {
+            "xsiType": "xnat:subjectData",
+            "req_format": "qs",
+            "xnat:subjectData/label": subject_id,
+        }
+        login.put(f"{project_uri}/subjects/{subject_id}", query=query)
+
+        xproject = login.projects[project_id]
+
+        try:
+            xsession = login.get(
+                f"{project_uri}/subjects/{subject_id}/experiments/{session_id}"
+            )
+        except XNATResponseError:
+            xsubject = login.classes.SubjectData(label=subject_id, parent=xproject)
+            xsession = login.classes.MrSessionData(label=session_id, parent=xsubject)
+        else:
+            logger.info(
+                "'%s' session in '%s' project already exists in test XNAT, skipping",
+                session_id,
+                project_id,
+            )
+            return
+
+        for i, (scan_type, fspath) in enumerate(to_upload.items(), start=1):
+            xdataset = login.classes.MrScanData(id=i, type=scan_type, parent=xsession)
+            resource = xdataset.create_resource(
+                "NIFTI"
+            )  # TODO get this resource name from somewhere else
+            resource.upload_dir(fspath.parent, method="tar_file")

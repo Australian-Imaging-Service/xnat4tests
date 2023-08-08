@@ -18,3 +18,29 @@ def test_add_data(config, launched_xnat):
             "gre_field_mapping 3mm",
             "t1_mprage_sag_p2_iso_1",
         ]
+
+
+def test_add_nifti(config, launched_xnat):
+
+    add_data("openneuro-t1w", config_name=config)
+
+    with connect(config) as login:
+        xsess1 = (
+            login.projects["OPENNEURO_T1W"]
+            .subjects["subject01"]
+            .experiments["subject01_MR01"]
+        )
+
+        assert sorted(s.type for s in xsess1.scans.values()) == [
+            "t1w",
+        ]
+
+        xsess2 = (
+            login.projects["OPENNEURO_T1W"]
+            .subjects["subject02"]
+            .experiments["subject02_MR01"]
+        )
+
+        assert sorted(s.type for s in xsess2.scans.values()) == [
+            "t1w",
+        ]
