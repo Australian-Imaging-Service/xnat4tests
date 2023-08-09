@@ -21,7 +21,7 @@ from .config import Config
 from .utils import logger
 
 
-AVAILABLE_DATASETS = ["dummydicom", "user-training", "openneuro-t1w"]
+AVAILABLE_DATASETS = ["dummydicom", "user-training", "openneuro-t1w", "simple-dir"]
 
 
 @contextmanager
@@ -88,6 +88,29 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="OPENNEURO_T1W",
             subject_id="subject02",
             session_id="subject02_MR01",
+        )
+
+    elif dataset == "simple-dir":
+
+        tmp_dir = Path(tempfile.mkdtemp())
+        a_dir = tmp_dir / "a-dir"
+        for i in range(3):
+            a_file = a_dir / f"file{i + 1}.txt"
+            a_file.write_text("A dummy file - {i}\n")
+
+        _upload_directly(
+            {"a-directory": a_dir},
+            config,
+            project_id="SIMPLEDIR",
+            subject_id="subject01",
+            session_id="subject01_1",
+        )
+        _upload_directly(
+            {"a-directory": a_dir},
+            config,
+            project_id="SIMPLEDIR",
+            subject_id="subject02",
+            session_id="subject02_1",
         )
 
     elif dataset == "user-training":
