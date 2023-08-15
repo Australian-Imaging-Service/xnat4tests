@@ -44,3 +44,25 @@ def test_add_nifti(config, launched_xnat):
         assert sorted(s.type for s in xsess2.scans.values()) == [
             "t1w",
         ]
+
+
+def test_simple_dir(config, launched_xnat):
+
+    add_data("simple-dir", config_name=config)
+
+    with connect(config) as login:
+        xsess1 = (
+            login.projects["SIMPLEDIR"].subjects["subject01"].experiments["subject01_1"]
+        )
+
+        assert sorted(s.type for s in xsess1.scans.values()) == [
+            "a-directory",
+        ]
+
+        xsess2 = (
+            login.projects["SIMPLEDIR"].subjects["subject02"].experiments["subject02_1"]
+        )
+
+        assert sorted(s.type for s in xsess2.scans.values()) == [
+            "a-directory",
+        ]
