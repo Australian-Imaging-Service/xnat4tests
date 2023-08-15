@@ -99,12 +99,12 @@ def add_data(dataset: str, config_name: str or dict = "default"):
         a_dir.mkdir()
         for i in range(3):
             a_file = a_dir / f"file{i + 1}.txt"
-            a_file.write_text("A dummy file - {i}\n")
+            a_file.write_text(f"A dummy file - {i + 1}\n")
 
         _upload_directly(
             {"a-directory": a_dir},
             config,
-            project_id="SIMPLEDIR",
+            project_id="SIMPLE_DIR",
             subject_id="subject01",
             session_id="subject01_1",
             resource_name="DIRECTORY",
@@ -112,7 +112,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
         _upload_directly(
             {"a-directory": a_dir},
             config,
-            project_id="SIMPLEDIR",
+            project_id="SIMPLE_DIR",
             subject_id="subject02",
             session_id="subject02_1",
             resource_name="DIRECTORY",
