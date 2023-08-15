@@ -81,6 +81,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="OPENNEURO_T1W",
             subject_id="subject01",
             session_id="subject01_MR01",
+            resource_name="NIFTI",
         )
         _upload_directly(
             {"t1w": openneuro_t1w()},
@@ -88,29 +89,33 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="OPENNEURO_T1W",
             subject_id="subject02",
             session_id="subject02_MR01",
+            resource_name="NIFTI",
         )
 
     elif dataset == "simple-dir":
 
         tmp_dir = Path(tempfile.mkdtemp())
         a_dir = tmp_dir / "a-dir"
+        a_dir.mkdir()
         for i in range(3):
             a_file = a_dir / f"file{i + 1}.txt"
-            a_file.write_text("A dummy file - {i}\n")
+            a_file.write_text(f"A dummy file - {i + 1}\n")
 
         _upload_directly(
             {"a-directory": a_dir},
             config,
-            project_id="SIMPLEDIR",
+            project_id="SIMPLE_DIR",
             subject_id="subject01",
             session_id="subject01_1",
+            resource_name="DIRECTORY",
         )
         _upload_directly(
             {"a-directory": a_dir},
             config,
-            project_id="SIMPLEDIR",
+            project_id="SIMPLE_DIR",
             subject_id="subject02",
             session_id="subject02_1",
+            resource_name="DIRECTORY",
         )
 
     elif dataset == "user-training":
@@ -186,7 +191,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
 
 
 def _upload_dicom_data(
-    to_upload: Path or ty.List[Path] or str,
+    to_upload: ty.Union[Path, ty.List[Path], str],
     config: dict,
     project_id: str,
     subject_id: str,
@@ -281,6 +286,7 @@ def _upload_directly(
     project_id: str,
     subject_id: str,
     session_id: str,
+    resource_name: str,
 ):
 
     with connect(config) as login:
@@ -325,6 +331,6 @@ def _upload_directly(
         for i, (scan_type, fspath) in enumerate(to_upload.items(), start=1):
             xdataset = login.classes.MrScanData(id=i, type=scan_type, parent=xsession)
             resource = xdataset.create_resource(
-                "NIFTI"
+                resource_name
             )  # TODO get this resource name from somewhere else
             resource.upload_dir(fspath.parent, method="tar_file")
