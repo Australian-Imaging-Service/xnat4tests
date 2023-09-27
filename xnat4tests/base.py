@@ -10,6 +10,14 @@ import xnat
 from .config import Config
 
 
+try:
+    request = requests.get("https://index.docker.io/v1")
+except requests.ConnectionError:
+    NO_DOCKER_HUB = True
+else:
+    NO_DOCKER_HUB = False
+
+
 SRC_DIR = Path(__file__).parent / "docker-src"
 
 
