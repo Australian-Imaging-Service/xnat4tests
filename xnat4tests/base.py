@@ -145,7 +145,7 @@ def start_xnat(config_name="default", keep_mounts=False, rebuild=True, relaunch=
     for attempts in range(1, config.connection_attempts + 1):
         try:
             login = connect(config)
-        except (xnat.exceptions.XNATError, requests.ConnectionError):
+        except (xnat.exceptions.XNATError, requests.ConnectionError, requests.ReadTimeout):
             if attempts == config.connection_attempts:
                 raise
             else:
