@@ -6,16 +6,6 @@ import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 from xnat.exceptions import XNATResponseError
-from medimages4tests.dummy.dicom.mri.t1w.siemens.skyra.syngo_d13c import (
-    get_image as t1w_syngo,
-)
-from medimages4tests.dummy.dicom.mri.dwi.siemens.skyra.syngo_d13c import (
-    get_image as dwi_syngo,
-)
-from medimages4tests.dummy.dicom.mri.fmap.siemens.skyra.syngo_d13c import (
-    get_image as fmap_syngo,
-)
-from medimages4tests.mri.neuro.t1w import get_image as openneuro_t1w
 from .base import connect
 from .config import Config
 from .utils import logger
@@ -64,6 +54,15 @@ def add_data(dataset: str, config_name: str or dict = "default"):
         )
 
     if dataset == "dummydicom":
+        from medimages4tests.dummy.dicom.mri.t1w.siemens.skyra.syngo_d13c import (
+            get_image as t1w_syngo,
+        )
+        from medimages4tests.dummy.dicom.mri.dwi.siemens.skyra.syngo_d13c import (
+            get_image as dwi_syngo,
+        )
+        from medimages4tests.dummy.dicom.mri.fmap.siemens.skyra.syngo_d13c import (
+            get_image as fmap_syngo,
+        )
 
         _upload_dicom_data(
             [t1w_syngo(), dwi_syngo(), fmap_syngo()],
@@ -74,6 +73,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
         )
 
     elif dataset == "openneuro-t1w":
+        from medimages4tests.mri.neuro.t1w import get_image as openneuro_t1w
 
         _upload_directly(
             {"t1w": openneuro_t1w()},
@@ -119,6 +119,9 @@ def add_data(dataset: str, config_name: str or dict = "default"):
         )
 
     elif dataset == "user-training":
+        from medimages4tests.dummy.dicom.mri.fmap.siemens.skyra.syngo_d13c import (
+            get_image as fmap_syngo,
+        )
 
         _upload_dicom_data(
             [t1w_syngo(), fmap_syngo()],
