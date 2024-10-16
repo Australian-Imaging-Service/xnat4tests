@@ -14,7 +14,9 @@ def test_launch(config, launched_xnat):
         login.put(f"/data/archive/projects/{PROJECT}")
 
         # Create subject
-        xsubject = login.classes.SubjectData(label=SUBJECT, parent=login.projects[PROJECT])
+        xsubject = login.classes.SubjectData(
+            label=SUBJECT, parent=login.projects[PROJECT]
+        )
         # Create session
         xsession = login.classes.MrSessionData(label=SESSION, parent=xsubject)
 

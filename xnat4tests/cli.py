@@ -139,9 +139,9 @@ def restart_cli(ctx, loglevel):
 
 @cli.command(
     name="add-data",
-    help="""Adds sample data to the XNAT instance
+    help=f"""Adds sample data to the XNAT instance
 
-DATASET is the name of the dataset to add (out of ['dummydicom'])""",
+DATASET is the name of the dataset to add (out of {AVAILABLE_DATASETS})""",
 )
 @click.argument("dataset", type=click.Choice(AVAILABLE_DATASETS))
 @click.option(

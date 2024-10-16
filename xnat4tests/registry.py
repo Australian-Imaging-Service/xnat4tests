@@ -1,10 +1,10 @@
-import docker
+import docker.models.containers
 from .utils import logger
 from .config import Config
 from .base import docker_network, connect
 
 
-def start_registry(config_name="default"):
+def start_registry(config_name: str = "default") -> docker.models.containers.Container:
 
     config = Config.load(config_name)
 
@@ -38,7 +38,7 @@ def start_registry(config_name="default"):
     return container
 
 
-def stop_registry(config_name="default"):
+def stop_registry(config_name: str = "default") -> None:
 
     config = Config.load(config_name)
 
