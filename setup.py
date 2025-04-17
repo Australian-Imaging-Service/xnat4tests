@@ -12,7 +12,7 @@ setup(
     author_email="tom.g.close@gmail.com",
     packages=find_packages(),
     url="https://github.com/australian-imaging-service/xnat4tests",
-    license="CC0",
+    license="Apache License 2.0",
     description=("Creates basic XNAT instance for API tests"),
     long_description=open("README.rst").read(),
     install_requires=[
