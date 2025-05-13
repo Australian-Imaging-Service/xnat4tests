@@ -4,7 +4,7 @@ from xnat4tests.data import add_data
 
 
 @pytest.mark.xfail(
-    "Something is wrong with the DICOM uploader with XNAT 1.9.1.2 REST API"
+    reason="Something is wrong with the DICOM uploader with XNAT 1.9.1.2 REST API"
 )
 def test_add_data(config, launched_xnat):
 
