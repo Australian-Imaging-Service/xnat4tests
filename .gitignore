@@ -14,3 +14,4 @@ __pycache__
 .vscode
 *.egg-info
 *.venv
+/xnat4tests/_version.py
