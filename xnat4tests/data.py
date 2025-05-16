@@ -262,7 +262,7 @@ def _upload_dicom_data(
 
         with open(zipped, "rb") as f:
             # Import data
-            login.upload(
+            login.upload_stream(
                 "/data/services/import",
                 query={
                     "dest": (
