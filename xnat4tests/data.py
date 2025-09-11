@@ -272,7 +272,7 @@ def _upload_dicom_data(
                     "Direct-Archive": True,
                     "overwrite": True,
                 },
-                file_=f,
+                stream=f,
                 content_type="application/zip",
                 method="post",
             )
