@@ -32,7 +32,11 @@ def set_cwd(path):
         os.chdir(pwd)
 
 
-def add_data(dataset: str, config_name: str or dict = "default"):
+def add_data(
+    dataset: str,
+    config_name: ty.Union[str, dict] = "default",
+    direct_archive: bool = True,
+):
     """Uploads sample test data into the XNAT repository for use in test regimes
 
     Parameters
@@ -70,6 +74,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="dummydicomproject",
             subject_id="dummydicomsubject",
             session_id="dummydicomsession",
+            direct_archive=direct_archive,
         )
 
     elif dataset == "openneuro-t1w":
@@ -129,6 +134,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="CONT01",
             session_id="CONT01_MR01",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -137,6 +143,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="CONT02",
             session_id="CONT02_MR01",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -145,6 +152,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="CONT01",
             session_id="CONT01_MR02",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -153,6 +161,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="CONT02",
             session_id="CONT02_MR02",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -161,6 +170,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="TEST01",
             session_id="TEST01_MR01",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -169,6 +179,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="TEST01",
             session_id="TEST01_MR02",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -177,6 +188,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="TEST02",
             session_id="TEST02_MR01",
+            direct_archive=direct_archive,
         )
 
         _upload_dicom_data(
@@ -185,6 +197,7 @@ def add_data(dataset: str, config_name: str or dict = "default"):
             project_id="TRAINING",
             subject_id="TEST02",
             session_id="TEST02_MR02",
+            direct_archive=direct_archive,
         )
 
     else:
@@ -199,6 +212,7 @@ def _upload_dicom_data(
     project_id: str,
     subject_id: str,
     session_id: str,
+    direct_archive: bool = True,
 ):
 
     if isinstance(to_upload, str):
@@ -269,10 +283,10 @@ def _upload_dicom_data(
                         f"/archive/projects/{project_id}/subjects"
                         f"/{subject_id}/experiments/{session_id}"
                     ),
-                    "Direct-Archive": True,
+                    "Direct-Archive": direct_archive,
                     "overwrite": True,
                 },
-                file_=f,
+                stream=f,
                 content_type="application/zip",
                 method="post",
             )
