@@ -33,7 +33,9 @@ def set_cwd(path):
 
 
 def add_data(
-    dataset: str, config_name: str | dict = "default", direct_archive: bool = True
+    dataset: str,
+    config_name: ty.Union[str, dict] = "default",
+    direct_archive: bool = True,
 ):
     """Uploads sample test data into the XNAT repository for use in test regimes
 
