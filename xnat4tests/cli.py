@@ -85,8 +85,17 @@ def cli(ctx, config):
     default="info",
     help="Set the level of logging detail",
 )
+@click.option(
+    "--direct-archive/--no-direct-archive",
+    type=bool,
+    default=True,
+    help=(
+        "Whether to use direct-to-archive uploads when adding sample data. This is "
+        "faster but requires XNAT 1.8.2 or later"
+    ),
+)
 @click.pass_context
-def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch, with_data):
+def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch, with_data, direct_archive):
 
     set_loggers(loglevel)
 
@@ -95,7 +104,7 @@ def start_cli(ctx, loglevel, keep_mounts, rebuild, relaunch, with_data):
     )
 
     for dataset in with_data:
-        add_data(dataset, config_name=ctx.obj)
+        add_data(dataset, config_name=ctx.obj, direct_archive=direct_archive)
 
 
 @cli.command(
@@ -151,11 +160,20 @@ DATASET is the name of the dataset to add (out of {AVAILABLE_DATASETS})""",
     default="info",
     help="Set the level of logging detail",
 )
+@click.option(
+    "--direct-archive/--no-direct-archive",
+    type=bool,
+    default=True,
+    help=(
+        "Whether to use direct-to-archive uploads when adding sample data. This is "
+        "faster but requires XNAT 1.8.2 or later"
+    ),
+)
 @click.pass_context
-def add_data_cli(ctx, loglevel, dataset):
+def add_data_cli(ctx, loglevel, dataset, direct_archive):
 
     set_loggers(loglevel)
-    add_data(dataset, config_name=ctx.obj)
+    add_data(dataset, config_name=ctx.obj, direct_archive=direct_archive)
 
 
 @cli.group(
