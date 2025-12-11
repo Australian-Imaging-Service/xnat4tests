@@ -32,7 +32,7 @@ def test_xnat_cli(work_dir, xnat_root_dir, cli_runner):
             f,
         )
 
-    result = cli_runner(x4t_cli, ["-c", str(config_path), "start", "--keep-mounts"])
+    result = cli_runner(x4t_cli, ["-c", str(config_path), "start", "--keep-mounts", "--with-data", "dummydicom"])
 
     assert result.exit_code == 0, show_cli_trace(result)
 
