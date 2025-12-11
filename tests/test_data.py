@@ -1,14 +1,12 @@
 import pytest
+import time
 from xnat4tests.base import connect
 from xnat4tests.data import add_data
 
 
-@pytest.mark.xfail(
-    reason="Something is wrong with the DICOM uploader with XNAT 1.9.1.2 REST API"
-)
 def test_add_data(config, launched_xnat):
 
-    add_data("dummydicom", config_name=config)
+    add_data("dummydicom", config_name=config, direct_archive=False)
 
     with connect(config) as login:
         xsess = (
