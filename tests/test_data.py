@@ -6,7 +6,7 @@ from xnat4tests.data import add_data
 
 def test_add_data(config, launched_xnat):
 
-    add_data("dummydicom", config_name=config, direct_archive=False)
+    add_data("dummydicom", config_name=config, upload_method="prearchive")
 
     with connect(config) as login:
         xsess = (
@@ -22,6 +22,7 @@ def test_add_data(config, launched_xnat):
         ]
 
 
+@pytest.mark.xfail(reason="OpenNeuro dataset is throwing 403 errors in GH action")
 def test_add_nifti(config, launched_xnat):
 
     add_data("openneuro-t1w", config_name=config)
