@@ -35,7 +35,7 @@ def set_cwd(path):
 def add_data(
     dataset: str,
     config_name: ty.Union[str, dict] = "default",
-    direct_archive: bool = True,
+    upload_method: str = "direct-archive",
 ):
     """Uploads sample test data into the XNAT repository for use in test regimes
 
@@ -68,14 +68,26 @@ def add_data(
             get_image as fmap_syngo,
         )
 
-        _upload_dicom_data(
-            [t1w_syngo(), dwi_syngo(), fmap_syngo()],
-            config,
-            project_id="dummydicomproject",
-            subject_id="dummydicomsubject",
-            session_id="dummydicomsession",
-            direct_archive=direct_archive,
-        )
+        if upload_method == "direct": 
+            _upload_directly(
+                {
+                    "t1w": t1w_syngo(), "dwi": dwi_syngo(), "fmap": fmap_syngo()
+                },
+                config,
+                project_id="dummydicomproject",
+                subject_id="dummydicomsubject",
+                session_id="dummydicomsession",
+                resource_name="DICOM",
+            )
+        else:
+            _upload_dicom_data(
+                [t1w_syngo(), dwi_syngo(), fmap_syngo()],
+                config,
+                project_id="dummydicomproject",
+                subject_id="dummydicomsubject",
+                session_id="dummydicomsession",
+                direct_archive=(upload_method == "direct-archive"),
+            )
 
     elif dataset == "openneuro-t1w":
         from medimages4tests.mri.neuro.t1w import get_image as openneuro_t1w
