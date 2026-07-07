@@ -37,7 +37,7 @@ Xnat4Tests is available on PyPI so can be installed with
 
 .. code-block:: bash
 
-    $ pip3 install xnat4tests
+    pip3 install xnat4tests
 
 or include in your package's ``test_requires`` if you are writing Python tests.
 
@@ -51,7 +51,7 @@ A test XNAT instance can be launched using the CLI with
 
 .. code-block:: bash
 
-    $ xnat4tests start
+    xnat4tests start
 
 This will spin up an empty XNAT instance that can be accessed using the default admin
 user account user='admin'/password='admin'. To add some sample data to play with you
@@ -59,14 +59,14 @@ can use the `add-data` command
 
 .. code-block:: bash
 
-    $ xnat4tests start
-    $ xnat4tests add-data 'dummydicom'
+    xnat4tests start
+    xnat4tests add-data dummydicom
 
 or in a single line
 
 .. code-block:: bash
 
-    $ xnat4tests start --with-data 'dummydicom'
+    xnat4tests start --with-data dummydicom
 
 By default, xnat4tests will create a configuration file at `$HOME/.xnat4tests/configs/default.yaml`.
 The config file can be adapted to modify the names of the Docker images/containers used, the ports
@@ -76,7 +76,7 @@ passing it to the base command, i.e.
 
 .. code-block:: bash
 
-    $ xnat4tests --config /path/to/my/repo/xnat4tests-config.yaml start
+    xnat4tests --config /path/to/my/repo/xnat4tests-config.yaml start
 
 To stop or restart the running container you can use ``xnat4tests stop`` and ``xnat4tests
 restart`` commands, respectively.
